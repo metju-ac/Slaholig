@@ -1,0 +1,225 @@
+package org.pv293.kotlinseminar.productDeliveryService.controllers
+
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.responses.ApiResponse
+import io.swagger.v3.oas.annotations.responses.ApiResponses
+import io.swagger.v3.oas.annotations.tags.Tag
+import org.axonframework.commandhandling.gateway.CommandGateway
+import org.axonframework.queryhandling.QueryGateway
+import org.pv293.kotlinseminar.productDeliveryService.application.commands.impl.MarkDroppedByBakerCommand
+import org.pv293.kotlinseminar.productDeliveryService.application.commands.impl.MarkDroppedByCourierCommand
+import org.pv293.kotlinseminar.productDeliveryService.application.commands.impl.MarkPickedUpByCourierCommand
+import org.pv293.kotlinseminar.productDeliveryService.application.commands.impl.RetrievePackageCommand
+import org.pv293.kotlinseminar.productDeliveryService.application.dto.PackageDeliveryDTO
+import org.pv293.kotlinseminar.productDeliveryService.application.queries.impl.PackageDeliveryQuery
+import org.slf4j.LoggerFactory
+import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
+import java.math.BigDecimal
+import java.util.UUID
+
+data class DropPackageRequest(
+    val latitude: BigDecimal,
+    val longitude: BigDecimal,
+    val photoUrl: String,
+)
+
+data class PickupRequest(
+    val courierId: String,
+)
+
+data class CourierDropRequest(
+    val courierId: String,
+    val latitude: BigDecimal,
+    val longitude: BigDecimal,
+    val photoUrl: String,
+)
+
+@RestController
+@RequestMapping("/deliveries")
+@Tag(name = "Package Delivery", description = "Package delivery tracking endpoints")
+class PackageDeliveryController(
+    private val queryGateway: QueryGateway,
+    private val commandGateway: CommandGateway,
+) {
+    private val logger = LoggerFactory.getLogger(PackageDeliveryController::class.java)
+
+    @GetMapping("/{deliveryId}")
+    @Operation(summary = "Get delivery by delivery ID")
+    fun getDeliveryById(@PathVariable deliveryId: String): ResponseEntity<PackageDeliveryDTO> {
+        logger.info("GET /deliveries/{}", deliveryId)
+
+        val delivery = queryGateway.query(
+            PackageDeliveryQuery(deliveryId = UUID.fromString(deliveryId)),
+            PackageDeliveryDTO::class.java,
+        ).join()
+
+        return if (delivery != null) {
+            ResponseEntity.ok(delivery)
+        } else {
+            ResponseEntity.notFound().build()
+        }
+    }
+
+    @GetMapping("/order/{orderId}")
+    @Operation(summary = "Get delivery by order ID")
+    fun getDeliveryByOrderId(@PathVariable orderId: String): ResponseEntity<PackageDeliveryDTO> {
+        logger.info("GET /deliveries/order/{}", orderId)
+
+        val delivery = queryGateway.query(
+            PackageDeliveryQuery(orderId = UUID.fromString(orderId)),
+            PackageDeliveryDTO::class.java,
+        ).join()
+
+        return if (delivery != null) {
+            ResponseEntity.ok(delivery)
+        } else {
+            ResponseEntity.notFound().build()
+        }
+    }
+
+    @PutMapping("/{deliveryId}/drop-by-baker")
+    @Operation(summary = "Mark package as dropped by baker at dead drop location")
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "200", description = "Package dropped successfully"),
+            ApiResponse(responseCode = "400", description = "Package already dropped or invalid status"),
+            ApiResponse(responseCode = "404", description = "Package delivery not found"),
+        ],
+    )
+    fun dropPackageByBaker(
+        @PathVariable deliveryId: String,
+        @RequestBody request: DropPackageRequest,
+    ): ResponseEntity<PackageDeliveryDTO> {
+        logger.info("PUT /deliveries/{}/drop-by-baker at ({}, {})", deliveryId, request.latitude, request.longitude)
+
+        val deliveryUUID = UUID.fromString(deliveryId)
+
+        commandGateway.sendAndWait<Any>(
+            MarkDroppedByBakerCommand(
+                deliveryId = deliveryUUID,
+                latitude = request.latitude,
+                longitude = request.longitude,
+                photoUrl = request.photoUrl,
+            ),
+        )
+
+        // Query updated state
+        val delivery = queryGateway.query(
+            PackageDeliveryQuery(deliveryId = deliveryUUID),
+            PackageDeliveryDTO::class.java,
+        ).join()
+
+        return ResponseEntity.ok(delivery)
+    }
+
+    @PutMapping("/{deliveryId}/pickup")
+    @Operation(summary = "Mark package as picked up by courier")
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "200", description = "Package picked up successfully"),
+            ApiResponse(responseCode = "400", description = "Invalid status or courier not assigned"),
+            ApiResponse(responseCode = "404", description = "Delivery not found"),
+        ],
+    )
+    fun markPickedUpByCourier(
+        @PathVariable deliveryId: String,
+        @RequestBody request: PickupRequest,
+    ): ResponseEntity<PackageDeliveryDTO> {
+        logger.info("PUT /deliveries/{}/pickup by courier {}", deliveryId, request.courierId)
+
+        val deliveryUUID = UUID.fromString(deliveryId)
+        val courierUUID = UUID.fromString(request.courierId)
+
+        commandGateway.sendAndWait<Any>(
+            MarkPickedUpByCourierCommand(
+                deliveryId = deliveryUUID,
+                courierId = courierUUID,
+            ),
+        )
+
+        // Query updated state
+        val delivery = queryGateway.query(
+            PackageDeliveryQuery(deliveryId = deliveryUUID),
+            PackageDeliveryDTO::class.java,
+        ).join()
+
+        return ResponseEntity.ok(delivery)
+    }
+
+    @PutMapping("/{deliveryId}/drop-by-courier")
+    @Operation(summary = "Mark package as dropped by courier at customer location")
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "200", description = "Package delivered successfully"),
+            ApiResponse(responseCode = "400", description = "Invalid status, wrong courier, or drop location too far from customer address"),
+            ApiResponse(responseCode = "404", description = "Delivery not found"),
+        ],
+    )
+    fun dropPackageByCourier(
+        @PathVariable deliveryId: String,
+        @RequestBody request: CourierDropRequest,
+    ): ResponseEntity<PackageDeliveryDTO> {
+        logger.info(
+            "PUT /deliveries/{}/drop-by-courier by courier {} at ({}, {})",
+            deliveryId, request.courierId, request.latitude, request.longitude,
+        )
+
+        val deliveryUUID = UUID.fromString(deliveryId)
+        val courierUUID = UUID.fromString(request.courierId)
+
+        commandGateway.sendAndWait<Any>(
+            MarkDroppedByCourierCommand(
+                deliveryId = deliveryUUID,
+                courierId = courierUUID,
+                latitude = request.latitude,
+                longitude = request.longitude,
+                photoUrl = request.photoUrl,
+            ),
+        )
+
+        // Query updated state
+        val delivery = queryGateway.query(
+            PackageDeliveryQuery(deliveryId = deliveryUUID),
+            PackageDeliveryDTO::class.java,
+        ).join()
+
+        return ResponseEntity.ok(delivery)
+    }
+
+    @PutMapping("/{deliveryId}/retrieve")
+    @Operation(summary = "Mark package as retrieved by customer")
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "200", description = "Package retrieved successfully"),
+            ApiResponse(responseCode = "400", description = "Invalid status or package already retrieved"),
+            ApiResponse(responseCode = "404", description = "Delivery not found"),
+        ],
+    )
+    fun retrievePackage(
+        @PathVariable deliveryId: String,
+    ): ResponseEntity<PackageDeliveryDTO> {
+        logger.info("PUT /deliveries/{}/retrieve", deliveryId)
+
+        val deliveryUUID = UUID.fromString(deliveryId)
+
+        commandGateway.sendAndWait<Any>(
+            RetrievePackageCommand(
+                deliveryId = deliveryUUID,
+            ),
+        )
+
+        // Query updated state
+        val delivery = queryGateway.query(
+            PackageDeliveryQuery(deliveryId = deliveryUUID),
+            PackageDeliveryDTO::class.java,
+        ).join()
+
+        return ResponseEntity.ok(delivery)
+    }
+}

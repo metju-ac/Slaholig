@@ -1,0 +1,150 @@
+services:
+  axon-server:
+    image: axoniq/axonserver:latest
+    ports:
+      - 8024:8024
+      - 8124:8124
+    environment:
+      - AXONIQ_AXONSERVER_STANDALONE=true
+    volumes:
+      - axon-data:/data
+      - axon-eventdata:/eventdata
+      - ./axon/config:/config:Z
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - 9090:9090
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:Z
+    depends_on:
+      - axon-server
+  loki:
+    image: grafana/loki
+    command: [ "-config.file=/etc/loki/local-config.yaml" ]
+    ports:
+      - "3100:3100"
+  grafana:
+    image: grafana/grafana
+    ports:
+      - 3000:3000
+    volumes:
+      - ./grafana/datasources:/etc/grafana/provisioning/datasources:Z
+      - ./grafana/dashboards:/var/lib/grafana/dashboards/:Z
+      - ./grafana/dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml:Z
+    depends_on:
+      - prometheus
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+  postgres-product-selection:
+    image: postgres:17
+    ports:
+      - 5436:5432
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: db
+  postgres-payment:
+    image: postgres:17
+    ports:
+      - 5437:5432
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: db
+  postgres-product-delivery:
+    image: postgres:17
+    ports:
+      - 5438:5432
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: db
+  postgres-courier:
+    image: postgres:17
+    ports:
+      - 5439:5432
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: db
+
+  product-selection-service:
+    image: kotlin-seminar/product-selection-service
+    build:
+      context: .
+      dockerfile: product-selection-service/Dockerfile
+    ports:
+      - 8080:8080
+    depends_on:
+      - axon-server
+      - postgres-product-selection
+      - loki
+      - prometheus
+    environment:
+      spring_profiles_active: prod
+      LOKI_ADD: loki
+      LOKI_PORT: 3100
+    volumes:
+      - ./spring/config:/config:z
+
+  payment-service:
+    image: kotlin-seminar/payment-service
+    build:
+      context: .
+      dockerfile: payment-service/Dockerfile
+    ports:
+      - 8081:8080
+    depends_on:
+      - axon-server
+      - postgres-payment
+      - loki
+      - prometheus
+    environment:
+      spring_profiles_active: prod
+      LOKI_ADD: loki
+      LOKI_PORT: 3100
+    volumes:
+      - ./spring/config:/config:z
+
+  product-delivery-service:
+    image: kotlin-seminar/product-delivery-service
+    build:
+      context: .
+      dockerfile: product-delivery-service/Dockerfile
+    ports:
+      - 8082:8080
+    depends_on:
+      - axon-server
+      - postgres-product-delivery
+      - loki
+      - prometheus
+    environment:
+      spring_profiles_active: prod
+      LOKI_ADD: loki
+      LOKI_PORT: 3100
+    volumes:
+      - ./spring/config:/config:z
+
+  courier-service:
+    image: kotlin-seminar/courier-service
+    build:
+      context: .
+      dockerfile: courier-service/Dockerfile
+    ports:
+      - 8083:8080
+    depends_on:
+      - axon-server
+      - postgres-courier
+      - loki
+      - prometheus
+    environment:
+      spring_profiles_active: prod
+      LOKI_ADD: loki
+      LOKI_PORT: 3100
+    volumes:
+      - ./spring/config:/config:z
+
+volumes:
+  axon-data:
+  axon-eventdata:
