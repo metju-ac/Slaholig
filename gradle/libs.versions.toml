@@ -1,0 +1,52 @@
+[versions]
+jvmVersion = "2.2.10"
+kotlinVersion = "2.2.10"
+pluginSpringVersion = "2.2.10"
+springBootVersion = "3.5.5"
+springDependencyManagementVersion = "1.1.6"
+pluginJpaVersion = "2.2.10"
+pluginNoArgVersion = "2.2.10"
+axonVersion = "4.12.1"
+axonKotlinVersion = "4.12.0"
+axonMessagingVersion = "4.12.1"
+axonSpringBootStarterVersion = "4.12.1"
+kotlinxDatetimeVersion = "0.6.1"
+micrometerPrometheusVersion = "1.15.4"
+h2databaseVersion = "2.3.232"
+postgresqlVersion = "42.7.2"
+kotlinReflectVersion  = "2.2.10"
+logbackVersion = "1.5.18"
+logbackLokiAppenderVersion = "2.0.0"
+logstashLogbackEncoderVersion = "8.1"
+
+[libraries]
+spring-boot-starter-actuator = { group = "org.springframework.boot", name = "spring-boot-starter-actuator", version.ref = "springBootVersion" }
+spring-boot-starter-web = { group = "org.springframework.boot", name = "spring-boot-starter-web", version.ref = "springBootVersion" }
+jackson = { group = "com.fasterxml.jackson.module", name = "jackson-module-kotlin" }
+kotlin-reflect = { group = "org.jetbrains.kotlin", name = "kotlin-reflect", version.ref = "kotlinReflectVersion" }
+micrometer-prometheus = { group = "io.micrometer", name = "micrometer-registry-prometheus", version.ref = "micrometerPrometheusVersion" }
+spring-boot-starter-test = { group = "org.springframework.boot", name = "spring-boot-starter-test", version.ref = "springBootVersion" }
+junit = { group = "org.jetbrains.kotlin", name = "kotlin-test-junit5" }
+junit-launcher = { group = "org.junit.platform", name = "junit-platform-launcher" }
+axon = { group = "org.axonframework", name = "axon", version.ref = "axonVersion" }
+axon-kotlin = { group = "org.axonframework.extensions.kotlin", name = "axon-kotlin", version.ref = "axonKotlinVersion" }
+axon-spring = { group = "org.axonframework", name = "axon-spring", version.ref = "axonVersion" }
+axon-spring-boot-starter = { group = "org.axonframework", name = "axon-spring-boot-starter", version.ref = "axonVersion" }
+axon-messaging = { group = "org.axonframework", name = "axon-messaging", version.ref = "axonVersion" }
+kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version.ref = "kotlinxDatetimeVersion" }
+springboot-starter-data-jpa = { group = "org.springframework.boot", name = "spring-boot-starter-data-jpa" , version.ref = "springBootVersion" }
+h2-database = { group = "com.h2database", name = "h2", version.ref = "h2databaseVersion" }
+postgres = { group = "org.postgresql", name = "postgresql", version.ref = "postgresqlVersion" }
+logback-classic = { group = "ch.qos.logback", name = "logback-classic", version.ref = "logbackVersion" }
+logback-loki-appender = { group = "com.github.loki4j", name = "loki-logback-appender", version.ref = "logbackLokiAppenderVersion" }
+logstash-logback-encoder = { group = "net.logstash.logback", name = "logstash-logback-encoder", version.ref = "logstashLogbackEncoderVersion" }
+
+
+[plugins]
+jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "jvmVersion" }
+spring = { id = "org.jetbrains.kotlin.plugin.spring", version.ref = "pluginSpringVersion" }
+springboot = { id = "org.springframework.boot", version.ref = "springBootVersion" }
+spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "springDependencyManagementVersion" }
+jpa = { id = "org.jetbrains.kotlin.plugin.jpa", version.ref = "pluginJpaVersion" }
+noarg = { id = "org.jetbrains.kotlin.plugin.noarg", version.ref = "pluginNoArgVersion" }
+

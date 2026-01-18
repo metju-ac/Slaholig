@@ -1,0 +1,42 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'assignment-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: [ 'assignment-service:8080' ]
+        labels:
+          service: 'assignment-service'
+
+  - job_name: 'courses-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['courses-service:8080']
+        labels:
+          service: 'courses-service'
+
+  - job_name: 'enrollment-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['enrollment-service:8080']
+        labels:
+          service: 'enrollment-service'
+
+  - job_name: 'forum-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['forum-service:8080']
+        labels:
+          service: 'forum-service'
+
+  - job_name: 'axon-server'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['axon-server:8024']
+        labels:
+          service: 'axon-server'
+
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
