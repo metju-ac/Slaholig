@@ -10,9 +10,9 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
   datasource:
-    url: jdbc:postgresql://main-rw.cnpg-system.svc.cluster.local:5432/forum-service
+    url: jdbc:postgresql://postgres-forum:5432/db
     driver-class-name: org.postgresql.Driver
-    username: forum-service
+    username: admin
     password: admin
     jackson:
       property-naming-strategy: SNAKE_CASE
