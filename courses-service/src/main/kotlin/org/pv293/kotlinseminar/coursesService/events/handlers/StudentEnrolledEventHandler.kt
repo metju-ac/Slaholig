@@ -1,6 +1,7 @@
 package org.pv293.kotlinseminar.coursesService.events.handlers
 
 import org.axonframework.commandhandling.gateway.CommandGateway
+import org.axonframework.config.ProcessingGroup
 import org.axonframework.eventhandling.EventHandler
 import org.axonframework.eventhandling.gateway.EventGateway
 import org.axonframework.queryhandling.QueryGateway
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Component
 import java.util.*
 
 @Component
+@ProcessingGroup("courses-service")
 class EnrollStudentEventHandler(
     private val queryGateway: QueryGateway,
     private val commandGateway: CommandGateway,

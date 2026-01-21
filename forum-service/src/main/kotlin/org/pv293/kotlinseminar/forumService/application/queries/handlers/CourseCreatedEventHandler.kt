@@ -1,6 +1,7 @@
 package org.pv293.kotlinseminar.forumService.application.queries.handlers
 
 import org.axonframework.commandhandling.gateway.CommandGateway
+import org.axonframework.config.ProcessingGroup
 import org.axonframework.eventhandling.EventHandler
 import org.pv293.kotlinseminar.coursesService.events.impl.CourseCreatedEvent
 import org.pv293.kotlinseminar.forumService.application.commands.impl.CreateCourseForumCommand
@@ -9,6 +10,7 @@ import java.util.UUID
 
 
 @Component
+@ProcessingGroup("forum-service")
 class CourseCreatedEventHandler(
     private val commandGateway: CommandGateway,
 ) {
