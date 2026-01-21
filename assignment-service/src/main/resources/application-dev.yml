@@ -33,6 +33,17 @@ management:
           - metrics
           - prometheus
 
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+  info:
+    title: Assignment Service API
+    description: API for managing course assignments
+    version: 1.0.0
+
 logging:
   loki:
     url: http://localhost:3100

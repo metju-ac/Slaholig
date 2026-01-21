@@ -2,14 +2,15 @@ package org.pv293.kotlinseminar.enrollmentService.application.aggregates
 
 import jakarta.persistence.*
 import org.axonframework.commandhandling.CommandHandler
+import org.axonframework.eventhandling.EventHandler
 import org.axonframework.modelling.command.AggregateIdentifier
 import org.axonframework.modelling.command.AggregateLifecycle.apply
 import org.axonframework.modelling.command.AggregateMember
 import org.axonframework.modelling.command.ForwardMatchingInstances
 import org.axonframework.spring.stereotype.Aggregate
-import org.pv293.kotlinseminar.enrollmentService.application.commands.impl.EnrollStudentCommand
 import org.pv293.kotlinseminar.enrollmentService.application.commands.impl.SubmitApplicationFormCommand
 import org.pv293.kotlinseminar.enrollmentService.events.impl.StudentCreatedEvent
+import org.pv293.kotlinseminar.enrollmentService.events.impl.StudentEnrolledEvent
 
 import java.util.UUID
 
@@ -54,9 +55,11 @@ open class Student() {
         )
     }
 
-    @CommandHandler
-    fun handle(command: EnrollStudentCommand) {
-        this.enrolled = true
+    @EventHandler
+    fun on(event: StudentEnrolledEvent) {
+        if (event.studentId == this.id) {
+            this.enrolled = true
+        }
     }
-}
 
+}

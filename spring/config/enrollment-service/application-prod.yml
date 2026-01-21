@@ -11,9 +11,9 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
   datasource:
-    url: jdbc:postgresql://main-rw.cnpg-system.svc.cluster.local:5432/enrollment-service
+    url: jdbc:postgresql://postgres-enrollment:5432/db
     driver-class-name: org.postgresql.Driver
-    username: enrollment-service
+    username: admin
     password: admin
     jackson:
       property-naming-strategy: SNAKE_CASE
@@ -37,6 +37,17 @@ management:
           - health
           - metrics
           - prometheus
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+  info:
+    title: Enrollment Service API
+    description: API for managing student enrollment and applications
+    version: 1.0.0
 
 logging:
   loki:

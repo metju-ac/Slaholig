@@ -43,6 +43,7 @@ dependencies {
     implementation(libs.logback.classic)
     implementation(libs.logback.loki.appender)
     implementation(libs.logstash.logback.encoder)
+    implementation(libs.springdoc.openapi.ui)
 }
 
 tasks.withType<org.springframework.boot.gradle.tasks.bundling.BootJar> {

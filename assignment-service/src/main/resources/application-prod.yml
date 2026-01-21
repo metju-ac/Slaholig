@@ -1,6 +1,6 @@
 spring:
   application:
-    name: courses-service
+    name: assignment-service
   jpa:
     hibernate:
       ddl-auto: update
@@ -10,7 +10,7 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
   datasource:
-    url: jdbc:postgresql://postgres-assignments:5432/db
+    url: jdbc:postgresql://postgres-assignment:5432/db
     driver-class-name: org.postgresql.Driver
     username: admin
     password: admin
