@@ -8,7 +8,7 @@ import org.pv293.kotlinseminar.coursesService.application.commands.impl.CreateCo
 import org.pv293.kotlinseminar.coursesService.application.commands.impl.RegisterStudentToCourseCommand
 import org.pv293.kotlinseminar.coursesService.application.dto.CourseDTO
 import org.pv293.kotlinseminar.coursesService.application.dto.CreateCourseDTO
-import org.pv293.kotlinseminar.coursesService.application.dto.StudentDTO
+import org.pv293.kotlinseminar.enrollmentService.application.dto.StudentDTO
 import org.pv293.kotlinseminar.coursesService.application.queries.impl.CourseQuery
 import org.pv293.kotlinseminar.coursesService.application.queries.impl.CourseStudentsQuery
 import org.pv293.kotlinseminar.enrollmentService.application.queries.impl.StudentQuery

@@ -6,7 +6,7 @@ import org.axonframework.eventhandling.EventHandler
 import org.axonframework.eventhandling.gateway.EventGateway
 import org.axonframework.queryhandling.QueryGateway
 import org.pv293.kotlinseminar.coursesService.application.commands.impl.RegisterStudentCommand
-import org.pv293.kotlinseminar.coursesService.application.dto.StudentDTO
+import org.pv293.kotlinseminar.enrollmentService.application.dto.StudentDTO
 import org.pv293.kotlinseminar.coursesService.events.impl.StudentEnrolledEvent
 import org.pv293.kotlinseminar.enrollmentService.application.queries.impl.StudentQuery
 import org.springframework.stereotype.Component

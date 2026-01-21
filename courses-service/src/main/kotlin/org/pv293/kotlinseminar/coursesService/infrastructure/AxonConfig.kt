@@ -10,6 +10,7 @@ import org.axonframework.modelling.command.Repository
 import org.axonframework.serialization.Serializer
 import org.axonframework.serialization.xml.XStreamSerializer
 import org.pv293.kotlinseminar.coursesService.application.aggregates.Course
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.annotation.Bean
 import java.util.UUID
 
@@ -40,6 +41,19 @@ class AxonConfig {
 
     @Bean
     fun eventSerializer(): Serializer {
+        val xStream = XStream()
+        // Allow all classes from the kotlinseminar packages (all microservices)
+        xStream.allowTypesByWildcard(arrayOf(
+            "org.pv293.kotlinseminar.**"
+        ))
+        return XStreamSerializer.builder()
+            .xStream(xStream)
+            .build()
+    }
+
+    @Bean
+    @Qualifier("messageSerializer")
+    fun messageSerializer(): Serializer {
         val xStream = XStream()
         // Allow all classes from the kotlinseminar packages (all microservices)
         xStream.allowTypesByWildcard(arrayOf(
