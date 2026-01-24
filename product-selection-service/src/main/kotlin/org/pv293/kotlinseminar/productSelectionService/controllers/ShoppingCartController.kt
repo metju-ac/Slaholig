@@ -1,5 +1,8 @@
 package org.pv293.kotlinseminar.productSelectionService.controllers
 
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.responses.ApiResponse
+import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.axonframework.commandhandling.gateway.CommandGateway
 import org.axonframework.queryhandling.QueryGateway
 import org.pv293.kotlinseminar.productSelectionService.application.commands.impl.AddBakedGoodToCartCommand
@@ -13,7 +16,6 @@ import org.pv293.kotlinseminar.productSelectionService.application.dto.UpdateCar
 import org.pv293.kotlinseminar.productSelectionService.application.queries.impl.ShoppingCartQuery
 import org.pv293.kotlinseminar.productSelectionService.repository.ShoppingCartRepository
 import org.slf4j.LoggerFactory
-import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -22,7 +24,6 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
@@ -36,6 +37,12 @@ class ShoppingCartController(
     private val logger = LoggerFactory.getLogger(ShoppingCartController::class.java)
 
     @PostMapping("")
+    @Operation(summary = "Create cart with first item")
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "200", description = "Cart created"),
+        ],
+    )
     fun createCartWithFirstItem(@RequestBody request: AddCartItemRequestDTO): ShoppingCartDTO {
         logger.info("Creating cart with first item: ${request.bakedGoodsId}")
         val cartId = UUID.randomUUID()
@@ -52,6 +59,12 @@ class ShoppingCartController(
     }
 
     @PostMapping("/{cartId}/items")
+    @Operation(summary = "Add item to cart")
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "200", description = "Item added"),
+        ],
+    )
     fun addItem(
         @PathVariable cartId: String,
         @RequestBody request: AddCartItemRequestDTO,
@@ -71,6 +84,13 @@ class ShoppingCartController(
     }
 
     @PatchMapping("/{cartId}/items/{bakedGoodsId}")
+    @Operation(summary = "Update cart item quantity")
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "200", description = "Item updated"),
+            ApiResponse(responseCode = "204", description = "Cart deleted (last item removed)"),
+        ],
+    )
     fun updateItemQuantity(
         @PathVariable cartId: String,
         @PathVariable bakedGoodsId: String,
@@ -130,16 +150,24 @@ class ShoppingCartController(
     }
 
     @DeleteMapping("/{cartId}/items/{bakedGoodsId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(summary = "Remove item from cart")
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "200", description = "Item removed"),
+            ApiResponse(responseCode = "204", description = "Cart deleted (last item removed)"),
+        ],
+    )
     fun removeItem(
         @PathVariable cartId: String,
         @PathVariable bakedGoodsId: String,
-    ) {
+    ): ResponseEntity<ShoppingCartDTO> {
         val cartUUID = UUID.fromString(cartId)
         val bakedGoodsUUID = UUID.fromString(bakedGoodsId)
         logger.info("Removing item $bakedGoodsId from cart $cartId")
 
-        if (!shoppingCartRepository.existsById(cartUUID)) return
+        if (!shoppingCartRepository.existsById(cartUUID)) {
+            return ResponseEntity.noContent().build()
+        }
 
         commandGateway.sendAndWait<UUID>(
             RemoveBakedGoodFromCartCommand(
@@ -147,9 +175,22 @@ class ShoppingCartController(
                 bakedGoodsId = bakedGoodsUUID,
             ),
         )
+
+        if (!shoppingCartRepository.existsById(cartUUID)) {
+            return ResponseEntity.noContent().build()
+        }
+
+        val cartDTO = queryGateway.query(ShoppingCartQuery(cartUUID), ShoppingCartDTO::class.java).get()
+        return ResponseEntity.ok(cartDTO)
     }
 
     @GetMapping("/{cartId}")
+    @Operation(summary = "Get cart")
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "200", description = "Cart returned"),
+        ],
+    )
     fun getCart(@PathVariable cartId: String): ShoppingCartDTO {
         val cartUUID = UUID.fromString(cartId)
         logger.info("Getting cart $cartId")
