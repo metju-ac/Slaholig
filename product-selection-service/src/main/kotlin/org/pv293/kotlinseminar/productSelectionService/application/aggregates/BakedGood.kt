@@ -15,7 +15,7 @@ import org.pv293.kotlinseminar.productSelectionService.events.impl.BakedGoodsRes
 import java.util.UUID
 
 @Entity
-@Aggregate(repository = "bakedGoodRepository")
+@Aggregate(repository = "bakedGoodAggregateRepository")
 @Table(name = "baked_good")
 class BakedGood() {
 

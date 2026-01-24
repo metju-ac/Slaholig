@@ -26,7 +26,7 @@ class AxonConfig {
     }
 
     @Bean
-    fun bakedGoodRepository(
+    fun bakedGoodAggregateRepository(
         configuration: Configuration,
         entityManagerProvider: EntityManagerProvider,
     ): Repository<BakedGood> {
