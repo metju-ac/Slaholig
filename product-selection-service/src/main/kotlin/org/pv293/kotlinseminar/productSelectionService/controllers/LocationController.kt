@@ -1,9 +1,13 @@
 package org.pv293.kotlinseminar.productSelectionService.controllers
 
 import org.axonframework.commandhandling.gateway.CommandGateway
+import org.axonframework.messaging.responsetypes.ResponseTypes
+import org.axonframework.queryhandling.QueryGateway
 import org.pv293.kotlinseminar.productSelectionService.application.commands.impl.ChooseLocationCommand
 import org.pv293.kotlinseminar.productSelectionService.application.dto.ChooseLocationRequestDTO
-import org.pv293.kotlinseminar.productSelectionService.application.dto.ChosenLocationDTO
+import org.pv293.kotlinseminar.productSelectionService.application.dto.ChooseLocationResponseDTO
+import org.pv293.kotlinseminar.productSelectionService.application.dto.BakedGoodDTO
+import org.pv293.kotlinseminar.productSelectionService.application.queries.impl.VisibleBakedGoodsQuery
 import org.slf4j.LoggerFactory
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -15,11 +19,12 @@ import java.util.UUID
 @RequestMapping("/product-selection/location")
 class LocationController(
     private val commandGateway: CommandGateway,
+    private val queryGateway: QueryGateway,
 ) {
     private val logger = LoggerFactory.getLogger(LocationController::class.java)
 
     @PostMapping("")
-    fun chooseLocation(@RequestBody request: ChooseLocationRequestDTO): ChosenLocationDTO {
+    fun chooseLocation(@RequestBody request: ChooseLocationRequestDTO): ChooseLocationResponseDTO {
         val locationId = UUID.randomUUID()
         logger.info("Choosing location: $locationId")
 
@@ -31,10 +36,16 @@ class LocationController(
             ),
         )
 
-        return ChosenLocationDTO(
+        val availableGoods = queryGateway.query(
+            VisibleBakedGoodsQuery(locationId = locationId),
+            ResponseTypes.multipleInstancesOf(BakedGoodDTO::class.java),
+        ).get()
+
+        return ChooseLocationResponseDTO(
             locationId = locationId,
             latitude = request.latitude,
             longitude = request.longitude,
+            availableGoods = availableGoods,
         )
     }
 }
