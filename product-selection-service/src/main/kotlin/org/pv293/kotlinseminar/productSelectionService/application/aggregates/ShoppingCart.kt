@@ -16,6 +16,7 @@ import org.axonframework.spring.stereotype.Aggregate
 import org.pv293.kotlinseminar.productSelectionService.application.commands.impl.AddBakedGoodToCartCommand
 import org.pv293.kotlinseminar.productSelectionService.application.commands.impl.AdjustCartItemQuantityCommand
 import org.pv293.kotlinseminar.productSelectionService.application.commands.impl.CreateShoppingCartWithItemCommand
+import org.pv293.kotlinseminar.productSelectionService.application.commands.impl.CreateOrderFromCartCommand
 import org.pv293.kotlinseminar.productSelectionService.application.commands.impl.RemoveBakedGoodFromCartCommand
 import org.pv293.kotlinseminar.productSelectionService.application.commands.impl.SetCartItemQuantityCommand
 import org.pv293.kotlinseminar.productSelectionService.events.impl.CartItemQuantityDecreasedEvent
@@ -24,6 +25,8 @@ import org.pv293.kotlinseminar.productSelectionService.events.impl.CartItemQuant
 import org.pv293.kotlinseminar.productSelectionService.events.impl.CartItemRemovedFromCartEvent
 import org.pv293.kotlinseminar.productSelectionService.events.impl.ShoppingCartCreatedEvent
 import org.pv293.kotlinseminar.productSelectionService.events.impl.ShoppingCartDeletedEvent
+import org.pv293.kotlinseminar.paymentService.events.impl.OrderCreatedFromCartEvent
+import org.pv293.kotlinseminar.paymentService.events.impl.OrderItemDTO
 import java.util.UUID
 import kotlin.math.min
 
@@ -163,6 +166,27 @@ class ShoppingCart() {
         if (!removed) return
 
         deleteCartIfEmpty()
+    }
+
+    @CommandHandler
+    fun handle(command: CreateOrderFromCartCommand) {
+        require(items.isNotEmpty()) { "Cannot create order from empty cart" }
+
+        apply(
+            OrderCreatedFromCartEvent(
+                orderId = command.orderId,
+                cartId = id,
+                items = items.map {
+                    OrderItemDTO(
+                        bakedGoodsId = it.bakedGoodsId,
+                        quantity = it.quantity,
+                    )
+                },
+            ),
+        )
+
+        apply(ShoppingCartDeletedEvent(cartId = id))
+        markDeleted()
     }
 
     private fun removeItem(bakedGoodsId: UUID): Boolean {
