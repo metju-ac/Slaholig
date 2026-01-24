@@ -17,6 +17,7 @@ import org.pv293.kotlinseminar.productSelectionService.application.commands.impl
 import org.pv293.kotlinseminar.productSelectionService.application.commands.impl.AdjustCartItemQuantityCommand
 import org.pv293.kotlinseminar.productSelectionService.application.commands.impl.CreateShoppingCartWithItemCommand
 import org.pv293.kotlinseminar.productSelectionService.application.commands.impl.CreateOrderFromCartCommand
+import org.pv293.kotlinseminar.productSelectionService.application.commands.impl.DeleteShoppingCartCommand
 import org.pv293.kotlinseminar.productSelectionService.application.commands.impl.RemoveBakedGoodFromCartCommand
 import org.pv293.kotlinseminar.productSelectionService.application.commands.impl.SetCartItemQuantityCommand
 import org.pv293.kotlinseminar.productSelectionService.events.impl.CartItemQuantityDecreasedEvent
@@ -105,7 +106,6 @@ class ShoppingCart() {
 
         if (command.quantity == 0) {
             removeItem(command.bakedGoodsId)
-            deleteCartIfEmpty()
             return
         }
 
@@ -153,19 +153,11 @@ class ShoppingCart() {
                 newQuantity = newQuantity,
             ),
         )
-
-        if (newQuantity == 0) {
-            removeItem(command.bakedGoodsId)
-            deleteCartIfEmpty()
-        }
     }
 
     @CommandHandler
     fun handle(command: RemoveBakedGoodFromCartCommand) {
-        val removed = removeItem(command.bakedGoodsId)
-        if (!removed) return
-
-        deleteCartIfEmpty()
+        removeItem(command.bakedGoodsId)
     }
 
     @CommandHandler
@@ -184,7 +176,10 @@ class ShoppingCart() {
                 },
             ),
         )
+    }
 
+    @CommandHandler
+    fun handle(command: DeleteShoppingCartCommand) {
         apply(ShoppingCartDeletedEvent(cartId = id))
         markDeleted()
     }
@@ -202,10 +197,4 @@ class ShoppingCart() {
         return true
     }
 
-    private fun deleteCartIfEmpty() {
-        if (items.isNotEmpty()) return
-
-        apply(ShoppingCartDeletedEvent(cartId = id))
-        markDeleted()
-    }
 }
