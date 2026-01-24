@@ -1,5 +1,8 @@
 package org.pv293.kotlinseminar.productSelectionService.controllers
 
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.responses.ApiResponse
+import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.axonframework.commandhandling.gateway.CommandGateway
 import org.axonframework.messaging.responsetypes.ResponseTypes
 import org.axonframework.queryhandling.QueryGateway
@@ -24,6 +27,12 @@ class LocationController(
     private val logger = LoggerFactory.getLogger(LocationController::class.java)
 
     @PostMapping("")
+    @Operation(summary = "Choose location")
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "200", description = "Location chosen"),
+        ],
+    )
     fun chooseLocation(@RequestBody request: ChooseLocationRequestDTO): ChooseLocationResponseDTO {
         val locationId = UUID.randomUUID()
         logger.info("Choosing location: $locationId")

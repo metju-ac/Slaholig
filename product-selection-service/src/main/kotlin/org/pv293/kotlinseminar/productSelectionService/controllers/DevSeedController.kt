@@ -1,5 +1,8 @@
 package org.pv293.kotlinseminar.productSelectionService.controllers
 
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.responses.ApiResponse
+import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.axonframework.commandhandling.gateway.CommandGateway
 import org.axonframework.messaging.responsetypes.ResponseTypes
 import org.axonframework.queryhandling.QueryGateway
@@ -21,6 +24,12 @@ class DevSeedController(
     private val logger = LoggerFactory.getLogger(DevSeedController::class.java)
 
     @PostMapping("/seed")
+    @Operation(summary = "Seed baked goods")
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "200", description = "Seeded goods returned"),
+        ],
+    )
     fun seed(): List<BakedGoodDTO> {
         logger.info("Seeding baked goods")
 

@@ -3,6 +3,7 @@ package org.pv293.kotlinseminar.productSelectionService.controllers
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
+import io.swagger.v3.oas.annotations.Parameter
 import org.axonframework.commandhandling.gateway.CommandGateway
 import org.pv293.kotlinseminar.productSelectionService.application.commands.impl.CreateOrderFromCartCommand
 import org.pv293.kotlinseminar.productSelectionService.application.dto.CreateOrderFromCartResponseDTO
@@ -31,7 +32,10 @@ class CartCheckoutController(
             ApiResponse(responseCode = "400", description = "Cart empty"),
         ],
     )
-    fun createOrder(@PathVariable cartId: String): CreateOrderFromCartResponseDTO {
+    fun createOrder(
+        @Parameter(example = "11111111-1111-1111-1111-111111111111")
+        @PathVariable cartId: String,
+    ): CreateOrderFromCartResponseDTO {
         val cartUUID = UUID.fromString(cartId)
         logger.info("Creating order from cart $cartId")
 

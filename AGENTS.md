@@ -14,6 +14,12 @@ No Copilot rules were found in `.github/copilot-instructions.md`.
 - `courses-service/`, `enrollment-service/`, `forum-service/`, `assignment-service/`: Spring Boot services
 - `docker-compose.yml`: local stack (Axon Server, Postgres per service, Grafana/Loki/Prometheus)
 
+## Temporary Handoff Note
+
+There is an in-progress cross-bounded-context workflow for checkout -> payment.
+See `PAYMENT_SERVICE_HANDOFF.md` for how to implement the new `payment-service` consumer.
+Once `payment-service` is implemented successfully, delete `PAYMENT_SERVICE_HANDOFF.md` and remove this note.
+
 ## Prereqs
 
 - JDK 21 (project uses `kotlin { jvmToolchain(21) }`)

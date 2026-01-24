@@ -1,6 +1,7 @@
 package org.pv293.kotlinseminar.productSelectionService.controllers
 
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.axonframework.commandhandling.gateway.CommandGateway
@@ -66,6 +67,7 @@ class ShoppingCartController(
         ],
     )
     fun addItem(
+        @Parameter(example = "11111111-1111-1111-1111-111111111111")
         @PathVariable cartId: String,
         @RequestBody request: AddCartItemRequestDTO,
     ): ShoppingCartDTO {
@@ -92,7 +94,9 @@ class ShoppingCartController(
         ],
     )
     fun updateItemQuantity(
+        @Parameter(example = "11111111-1111-1111-1111-111111111111")
         @PathVariable cartId: String,
+        @Parameter(example = "22222222-2222-2222-2222-222222222222")
         @PathVariable bakedGoodsId: String,
         @RequestBody request: UpdateCartItemRequestDTO,
     ): ResponseEntity<ShoppingCartDTO> {
@@ -158,7 +162,9 @@ class ShoppingCartController(
         ],
     )
     fun removeItem(
+        @Parameter(example = "11111111-1111-1111-1111-111111111111")
         @PathVariable cartId: String,
+        @Parameter(example = "22222222-2222-2222-2222-222222222222")
         @PathVariable bakedGoodsId: String,
     ): ResponseEntity<ShoppingCartDTO> {
         val cartUUID = UUID.fromString(cartId)
@@ -191,7 +197,10 @@ class ShoppingCartController(
             ApiResponse(responseCode = "200", description = "Cart returned"),
         ],
     )
-    fun getCart(@PathVariable cartId: String): ShoppingCartDTO {
+    fun getCart(
+        @Parameter(example = "11111111-1111-1111-1111-111111111111")
+        @PathVariable cartId: String,
+    ): ShoppingCartDTO {
         val cartUUID = UUID.fromString(cartId)
         logger.info("Getting cart $cartId")
         return queryGateway.query(ShoppingCartQuery(cartUUID), ShoppingCartDTO::class.java).get()
