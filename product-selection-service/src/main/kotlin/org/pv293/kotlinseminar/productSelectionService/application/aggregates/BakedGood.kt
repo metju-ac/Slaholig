@@ -1,16 +1,23 @@
 package org.pv293.kotlinseminar.productSelectionService.application.aggregates
 
 import jakarta.persistence.Column
+import jakarta.persistence.CascadeType
 import jakarta.persistence.Entity
+import jakarta.persistence.FetchType
 import jakarta.persistence.Id
+import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
 import org.axonframework.commandhandling.CommandHandler
 import org.axonframework.modelling.command.AggregateIdentifier
 import org.axonframework.modelling.command.AggregateLifecycle.apply
+import org.axonframework.modelling.command.AggregateMember
+import org.axonframework.modelling.command.ForwardMatchingInstances
 import org.axonframework.spring.stereotype.Aggregate
+import org.pv293.kotlinseminar.productSelectionService.application.commands.impl.AddBakedGoodsReviewCommand
 import org.pv293.kotlinseminar.productSelectionService.application.commands.impl.PublishBakedGoodsCommand
 import org.pv293.kotlinseminar.productSelectionService.application.commands.impl.RestockBakedGoodsCommand
 import org.pv293.kotlinseminar.productSelectionService.events.impl.BakedGoodsPublishedEvent
+import org.pv293.kotlinseminar.productSelectionService.events.impl.BakedGoodsReviewAddedEvent
 import org.pv293.kotlinseminar.productSelectionService.events.impl.BakedGoodsRestockedEvent
 import java.util.UUID
 
@@ -31,6 +38,10 @@ class BakedGood() {
 
     @Column(name = "stock")
     var stock: Int = 0
+
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "bakedGood", cascade = [CascadeType.ALL])
+    @AggregateMember(eventForwardingMode = ForwardMatchingInstances::class)
+    open var reviews: MutableList<BakedGoodReview> = mutableListOf()
 
     @CommandHandler
     constructor(command: PublishBakedGoodsCommand) : this() {
@@ -61,6 +72,30 @@ class BakedGood() {
                 bakedGoodsId = id,
                 amount = command.amount,
                 newStock = stock,
+            ),
+        )
+    }
+
+    @CommandHandler
+    fun handle(command: AddBakedGoodsReviewCommand) {
+        require(command.rating in 1..5) { "Rating must be between 1 and 5" }
+
+        val review = BakedGoodReview().apply {
+            id = command.reviewId
+            authorId = command.authorId
+            rating = command.rating
+            content = command.content
+            bakedGood = this@BakedGood
+        }
+
+        reviews.add(review)
+        apply(
+            BakedGoodsReviewAddedEvent(
+                bakedGoodsId = id,
+                reviewId = command.reviewId,
+                authorId = command.authorId,
+                rating = command.rating,
+                content = command.content,
             ),
         )
     }
