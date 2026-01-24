@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.RequestParam
+import org.pv293.kotlinseminar.productSelectionService.application.queries.impl.VisibleBakedGoodsQuery
 import java.util.UUID
 
 @RestController
@@ -37,6 +39,8 @@ class ProductSelectionController(
                 name = request.name,
                 description = request.description,
                 initialStock = request.initialStock,
+                latitude = request.latitude,
+                longitude = request.longitude,
             ),
         )
 
@@ -61,10 +65,18 @@ class ProductSelectionController(
     }
 
     @GetMapping("")
-    fun getBakedGoods(): List<BakedGoodDTO> {
-        logger.info("Getting all baked goods")
+    fun getBakedGoods(@RequestParam(required = false) locationId: String?): List<BakedGoodDTO> {
+        if (locationId == null) {
+            logger.info("Getting all baked goods")
+            return queryGateway.query(
+                BakedGoodsQuery(),
+                ResponseTypes.multipleInstancesOf(BakedGoodDTO::class.java),
+            ).get()
+        }
+
+        logger.info("Getting visible baked goods for locationId: $locationId")
         return queryGateway.query(
-            BakedGoodsQuery(),
+            VisibleBakedGoodsQuery(locationId = UUID.fromString(locationId)),
             ResponseTypes.multipleInstancesOf(BakedGoodDTO::class.java),
         ).get()
     }

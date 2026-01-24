@@ -39,6 +39,12 @@ class BakedGood() {
     @Column(name = "stock")
     var stock: Int = 0
 
+    @Column(name = "latitude")
+    var latitude: Double = 0.0
+
+    @Column(name = "longitude")
+    var longitude: Double = 0.0
+
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "bakedGood", cascade = [CascadeType.ALL])
     @AggregateMember(eventForwardingMode = ForwardMatchingInstances::class)
     open var reviews: MutableList<BakedGoodReview> = mutableListOf()
@@ -51,6 +57,8 @@ class BakedGood() {
         name = command.name
         description = command.description
         stock = command.initialStock
+        latitude = command.latitude
+        longitude = command.longitude
 
         apply(
             BakedGoodsPublishedEvent(
@@ -58,6 +66,8 @@ class BakedGood() {
                 name = command.name,
                 description = command.description,
                 initialStock = command.initialStock,
+                latitude = command.latitude,
+                longitude = command.longitude,
             ),
         )
     }

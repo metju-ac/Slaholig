@@ -18,6 +18,8 @@ class BakedGoodsQueryHandler(
                 name = it.name,
                 description = it.description,
                 stock = it.stock,
+                latitude = it.latitude,
+                longitude = it.longitude,
             )
         }
     }

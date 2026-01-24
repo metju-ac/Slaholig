@@ -25,6 +25,8 @@ class BakedGoodQueryHandler(
             name = bakedGood.name,
             description = bakedGood.description,
             stock = bakedGood.stock,
+            latitude = bakedGood.latitude,
+            longitude = bakedGood.longitude,
         )
     }
 }

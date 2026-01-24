@@ -7,4 +7,6 @@ data class BakedGoodDTO(
     val name: String,
     val description: String?,
     val stock: Int,
+    val latitude: Double,
+    val longitude: Double,
 )

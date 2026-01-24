@@ -1,9 +1,9 @@
 package org.pv293.kotlinseminar.productSelectionService.application.dto
 
-data class PublishBakedGoodsRequestDTO(
-    val name: String,
-    val description: String?,
-    val initialStock: Int,
+import java.util.UUID
+
+data class ChosenLocationDTO(
+    val locationId: UUID,
     val latitude: Double,
     val longitude: Double,
 )

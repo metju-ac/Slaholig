@@ -3,12 +3,9 @@ package org.pv293.kotlinseminar.productSelectionService.application.commands.imp
 import org.axonframework.modelling.command.TargetAggregateIdentifier
 import java.util.UUID
 
-data class PublishBakedGoodsCommand(
+data class ChooseLocationCommand(
     @TargetAggregateIdentifier
-    val id: UUID,
-    val name: String,
-    val description: String?,
-    val initialStock: Int,
+    val locationId: UUID,
     val latitude: Double,
     val longitude: Double,
 )
