@@ -11,6 +11,7 @@ import org.axonframework.serialization.Serializer
 import org.axonframework.serialization.xml.XStreamSerializer
 import org.pv293.kotlinseminar.productSelectionService.application.aggregates.BakedGood
 import org.pv293.kotlinseminar.productSelectionService.application.aggregates.ChosenLocation
+import org.pv293.kotlinseminar.productSelectionService.application.aggregates.ShoppingCart
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.annotation.Bean
 import java.util.UUID
@@ -45,6 +46,19 @@ class AxonConfig {
         entityManagerProvider: EntityManagerProvider,
     ): Repository<ChosenLocation> {
         return GenericJpaRepository.builder<ChosenLocation>(ChosenLocation::class.java)
+            .identifierConverter { str -> UUID.fromString(str) }
+            .entityManagerProvider(entityManagerProvider)
+            .eventBus(configuration.eventBus())
+            .parameterResolverFactory(configuration.parameterResolverFactory())
+            .build()
+    }
+
+    @Bean
+    fun shoppingCartAggregateRepository(
+        configuration: Configuration,
+        entityManagerProvider: EntityManagerProvider,
+    ): Repository<ShoppingCart> {
+        return GenericJpaRepository.builder<ShoppingCart>(ShoppingCart::class.java)
             .identifierConverter { str -> UUID.fromString(str) }
             .entityManagerProvider(entityManagerProvider)
             .eventBus(configuration.eventBus())
