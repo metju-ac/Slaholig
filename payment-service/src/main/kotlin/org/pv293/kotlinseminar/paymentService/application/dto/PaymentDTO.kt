@@ -10,6 +10,7 @@ data class PaymentDTO(
     val status: PaymentStatus,
     val transactionId: String?,
     val failureReason: String?,
+    val walletAddress: String?,
 )
 
 data class PaymentItemDTO(

@@ -6,4 +6,5 @@ import java.util.UUID
 data class PayOrderCommand(
     @TargetAggregateIdentifier
     val orderId: UUID,
+    val walletAddress: String? = null,
 )

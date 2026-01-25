@@ -4,4 +4,5 @@ import java.util.UUID
 
 data class PaymentProcessingEvent(
     val orderId: UUID,
+    val walletAddress: String? = null,
 )

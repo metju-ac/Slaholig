@@ -8,11 +8,13 @@ import org.axonframework.commandhandling.gateway.CommandGateway
 import org.axonframework.queryhandling.QueryGateway
 import org.pv293.kotlinseminar.paymentService.application.commands.impl.PayOrderCommand
 import org.pv293.kotlinseminar.paymentService.application.dto.PaymentDTO
+import org.pv293.kotlinseminar.paymentService.application.dto.PaymentMethodRequest
 import org.pv293.kotlinseminar.paymentService.application.queries.impl.PaymentQuery
 import org.slf4j.LoggerFactory
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
@@ -54,12 +56,16 @@ class PaymentController(
     fun payOrder(
         @Parameter(example = "11111111-1111-1111-1111-111111111111")
         @PathVariable orderId: String,
+        @RequestBody(required = false) paymentMethod: PaymentMethodRequest?,
     ): PaymentDTO {
         val orderUUID = UUID.fromString(orderId)
-        logger.info("Initiating payment for order $orderId")
+        logger.info("Initiating payment for order $orderId with wallet: ${paymentMethod?.walletAddress ?: "not provided"}")
 
         commandGateway.sendAndWait<Any>(
-            PayOrderCommand(orderId = orderUUID),
+            PayOrderCommand(
+                orderId = orderUUID,
+                walletAddress = paymentMethod?.walletAddress,
+            ),
         )
 
         // Wait a bit for async processing to complete

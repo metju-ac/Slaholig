@@ -15,8 +15,12 @@ data class PaymentGatewayResult(
 class CryptoPaymentGatewayService {
     private val logger = LoggerFactory.getLogger(CryptoPaymentGatewayService::class.java)
 
-    fun mockProcessPayment(orderId: UUID, itemCount: Int): PaymentGatewayResult {
-        logger.info("Calling crypto payment gateway for order $orderId with $itemCount items")
+    fun mockProcessPayment(
+        orderId: UUID,
+        itemCount: Int,
+        walletAddress: String?,
+    ): PaymentGatewayResult {
+        logger.info("Calling crypto payment gateway for order $orderId with $itemCount items from wallet: ${walletAddress ?: "not provided"}")
 
         // Simulate network delay
         Thread.sleep(100)

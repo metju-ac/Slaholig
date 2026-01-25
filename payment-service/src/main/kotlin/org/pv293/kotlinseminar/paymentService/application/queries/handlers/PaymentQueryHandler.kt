@@ -28,6 +28,7 @@ class PaymentQueryHandler(
             status = payment.status,
             transactionId = payment.transactionId,
             failureReason = payment.failureReason,
+            walletAddress = payment.walletAddress,
         )
     }
 }

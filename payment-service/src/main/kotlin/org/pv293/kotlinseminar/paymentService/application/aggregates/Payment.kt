@@ -59,6 +59,9 @@ class Payment() {
     @Column(nullable = true)
     var failureReason: String? = null
 
+    @Column(nullable = true)
+    var walletAddress: String? = null
+
     @CommandHandler
     constructor(command: CreatePaymentCommand) : this() {
         apply(
@@ -78,12 +81,13 @@ class Payment() {
     ) {
         require(status == PaymentStatus.CREATED || status == PaymentStatus.FAILED) { "Payment must be in CREATED or FAILED status to pay. Current status: $status" }
 
-        apply(PaymentProcessingEvent(orderId = command.orderId))
+        apply(PaymentProcessingEvent(orderId = command.orderId, walletAddress = command.walletAddress))
 
         // Call the crypto payment gateway
         val result = cryptoPaymentGatewayService.mockProcessPayment(
             orderId = command.orderId,
             itemCount = items.sumOf { it.quantity },
+            walletAddress = command.walletAddress,
         )
 
         if (result.success) {
@@ -143,6 +147,7 @@ class Payment() {
     fun on(event: PaymentProcessingEvent) {
         this.status = PaymentStatus.PROCESSING
         this.failureReason = null  // Clear previous failure reason on retry
+        this.walletAddress = event.walletAddress  // Store wallet address
     }
 
     @EventSourcingHandler
