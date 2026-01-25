@@ -11,14 +11,8 @@ No Copilot rules were found in `.github/copilot-instructions.md`.
 ## Repo Layout
 
 - `shared/`: shared DTOs, events, queries, and common exceptions
-- `courses-service/`, `enrollment-service/`, `forum-service/`, `assignment-service/`: Spring Boot services
+- `courses-service/`, `enrollment-service/`, `forum-service/`, `assignment-service/`, `product-selection-service/`, `payment-service/`: Spring Boot services
 - `docker-compose.yml`: local stack (Axon Server, Postgres per service, Grafana/Loki/Prometheus)
-
-## Temporary Handoff Note
-
-There is an in-progress cross-bounded-context workflow for checkout -> payment.
-See `PAYMENT_SERVICE_HANDOFF.md` for how to implement the new `payment-service` consumer.
-Once `payment-service` is implemented successfully, delete `PAYMENT_SERVICE_HANDOFF.md` and remove this note.
 
 ## Prereqs
 
@@ -78,6 +72,8 @@ When running via Docker Compose:
 - Courses: http://localhost:8081/swagger-ui.html
 - Forum: http://localhost:8082/swagger-ui.html
 - Assignment: http://localhost:8083/swagger-ui.html
+- Product Selection: http://localhost:8084/swagger-ui.html
+- Payment: http://localhost:8085/swagger-ui.html
 
 ## Code Style Guidelines (Kotlin / Spring Boot)
 
