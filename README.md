@@ -36,4 +36,8 @@ Once the services are running, you can access the interactive API documentation 
 - **Swagger UI**: http://localhost:8084/swagger-ui.html
 - **OpenAPI Spec**: http://localhost:8084/api-docs
 
+### Payment Service
+- **Swagger UI**: http://localhost:8085/swagger-ui.html
+- **OpenAPI Spec**: http://localhost:8085/api-docs
+
 The Swagger UI provides interactive documentation where you can explore all available endpoints and test API calls directly from your browser.

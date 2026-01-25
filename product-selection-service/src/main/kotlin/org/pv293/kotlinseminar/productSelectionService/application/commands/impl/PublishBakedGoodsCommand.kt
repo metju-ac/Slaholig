@@ -1,6 +1,7 @@
 package org.pv293.kotlinseminar.productSelectionService.application.commands.impl
 
 import org.axonframework.modelling.command.TargetAggregateIdentifier
+import java.math.BigDecimal
 import java.util.UUID
 
 data class PublishBakedGoodsCommand(
@@ -9,6 +10,7 @@ data class PublishBakedGoodsCommand(
     val name: String,
     val description: String?,
     val initialStock: Int,
+    val price: BigDecimal,
     val latitude: Double,
     val longitude: Double,
 )

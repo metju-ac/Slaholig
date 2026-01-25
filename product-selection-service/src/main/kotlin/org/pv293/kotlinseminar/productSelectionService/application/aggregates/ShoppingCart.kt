@@ -168,12 +168,7 @@ class ShoppingCart() {
             OrderCreatedFromCartEvent(
                 orderId = command.orderId,
                 cartId = id,
-                items = items.map {
-                    OrderItemDTO(
-                        bakedGoodsId = it.bakedGoodsId,
-                        quantity = it.quantity,
-                    )
-                },
+                items = command.items,
             ),
         )
     }
