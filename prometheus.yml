@@ -37,6 +37,20 @@ scrape_configs:
         labels:
           service: 'product-selection-service'
 
+  - job_name: 'payment-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['payment-service:8080']
+        labels:
+          service: 'payment-service'
+
+  - job_name: 'product-delivery-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['product-delivery-service:8080']
+        labels:
+          service: 'product-delivery-service'
+
   - job_name: 'axon-server'
     metrics_path: '/actuator/prometheus'
     static_configs:
