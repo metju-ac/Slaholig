@@ -16,7 +16,6 @@ import org.axonframework.modelling.command.AggregateIdentifier
 import org.axonframework.modelling.command.AggregateLifecycle.apply
 import org.axonframework.spring.stereotype.Aggregate
 import org.pv293.kotlinseminar.paymentService.application.commands.impl.CreatePaymentCommand
-import org.pv293.kotlinseminar.paymentService.application.commands.impl.MarkPaymentPaidCommand
 import org.pv293.kotlinseminar.paymentService.application.commands.impl.PayOrderCommand
 import org.pv293.kotlinseminar.paymentService.application.commands.impl.ReleaseFundsCommand
 import org.pv293.kotlinseminar.paymentService.application.services.CryptoPaymentGatewayService
@@ -97,6 +96,12 @@ class Payment() {
                     transactionId = result.transactionId!!,
                 ),
             )
+            apply(
+                PaymentMarkedPaidEvent(
+                    orderId = command.orderId,
+                    transactionId = result.transactionId,
+                ),
+            )
         } else {
             apply(
                 PaymentFailedEvent(
@@ -105,20 +110,6 @@ class Payment() {
                 ),
             )
         }
-    }
-
-    @CommandHandler
-    fun handle(command: MarkPaymentPaidCommand) {
-        require(status == PaymentStatus.PROCESSING) {
-            "Payment must be in PROCESSING status to mark as paid. Current status: $status"
-        }
-
-        apply(
-            PaymentMarkedPaidEvent(
-                orderId = command.orderId,
-                transactionId = command.transactionId,
-            ),
-        )
     }
 
     @CommandHandler
