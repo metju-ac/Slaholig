@@ -5,11 +5,15 @@ import jakarta.persistence.EntityManager
 import jakarta.persistence.PersistenceContext
 import org.axonframework.common.jpa.EntityManagerProvider
 import org.axonframework.config.Configuration
+import org.axonframework.config.EventProcessingConfigurer
+import org.axonframework.eventhandling.TrackingEventProcessorConfiguration
+import org.axonframework.eventhandling.async.SequencingPolicy
 import org.axonframework.modelling.command.GenericJpaRepository
 import org.axonframework.modelling.command.Repository
 import org.axonframework.serialization.Serializer
 import org.axonframework.serialization.xml.XStreamSerializer
 import org.pv293.kotlinseminar.paymentService.application.aggregates.Payment
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.annotation.Bean
 import java.util.UUID
@@ -63,5 +67,12 @@ class AxonConfig {
         return XStreamSerializer.builder()
             .xStream(xStream)
             .build()
+    }
+
+    @Autowired
+    fun configureEventProcessing(eventProcessingConfigurer: EventProcessingConfigurer) {
+        // Configure payment-completion-policy to use tracking processor
+        // This ensures events are processed asynchronously after the aggregate is persisted
+        eventProcessingConfigurer.registerTrackingEventProcessor("payment-completion-policy")
     }
 }
