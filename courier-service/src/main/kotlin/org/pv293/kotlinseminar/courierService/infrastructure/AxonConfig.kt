@@ -9,6 +9,7 @@ import org.axonframework.modelling.command.GenericJpaRepository
 import org.axonframework.modelling.command.Repository
 import org.axonframework.serialization.Serializer
 import org.axonframework.serialization.xml.XStreamSerializer
+import org.pv293.kotlinseminar.courierService.application.aggregates.AvailableDeliveryOffer
 import org.pv293.kotlinseminar.courierService.application.aggregates.CourierQueue
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.annotation.Bean
@@ -31,6 +32,19 @@ class AxonConfig {
         entityManagerProvider: EntityManagerProvider,
     ): Repository<CourierQueue> {
         return GenericJpaRepository.builder<CourierQueue>(CourierQueue::class.java)
+            .identifierConverter { str -> UUID.fromString(str) }
+            .entityManagerProvider(entityManagerProvider)
+            .eventBus(configuration.eventBus())
+            .parameterResolverFactory(configuration.parameterResolverFactory())
+            .build()
+    }
+
+    @Bean
+    fun deliveryOfferAggregateRepository(
+        configuration: Configuration,
+        entityManagerProvider: EntityManagerProvider,
+    ): Repository<AvailableDeliveryOffer> {
+        return GenericJpaRepository.builder<AvailableDeliveryOffer>(AvailableDeliveryOffer::class.java)
             .identifierConverter { str -> UUID.fromString(str) }
             .entityManagerProvider(entityManagerProvider)
             .eventBus(configuration.eventBus())
