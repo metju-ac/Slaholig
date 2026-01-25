@@ -36,7 +36,7 @@
           "showLineNumbers": false,
           "showMiniMap": false
         },
-        "content": "# Spring Boot Microservices Dashboard\n**Services:** courses-service | enrollment-service | forum-service | assignment-service",
+        "content": "# Spring Boot Microservices Dashboard\n**Services:** courses-service | enrollment-service | forum-service | assignment-service | product-selection-service",
         "mode": "markdown"
       },
       "pluginVersion": "10.0.0",
@@ -321,7 +321,7 @@
       "gridPos": {
         "h": 4,
         "w": 8,
-        "x": 24,
+        "x": 16,
         "y": 2
       },
       "id": 4,
@@ -350,6 +350,83 @@
         }
       ],
       "title": "Assignment Service",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus_main_uid"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "red",
+                  "index": 1,
+                  "text": "DOWN"
+                },
+                "1": {
+                  "color": "green",
+                  "index": 0,
+                  "text": "UP"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 0,
+        "y": 6
+      },
+      "id": 5,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus_main_uid"
+          },
+          "expr": "up{service=\"product-selection-service\"}",
+          "legendFormat": "product-selection-service",
+          "refId": "A"
+        }
+      ],
+      "title": "Product Selection Service",
       "type": "stat"
     },
     {
@@ -410,9 +487,9 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 6
+        "y": 10
       },
-      "id": 5,
+      "id": 6,
       "options": {
         "legend": {
           "calcs": ["mean", "max"],
@@ -462,6 +539,15 @@
           "expr": "rate(http_server_requests_seconds_count{service=\"assignment-service\"}[1m])",
           "legendFormat": "assignment-service",
           "refId": "D"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus_main_uid"
+          },
+          "expr": "rate(http_server_requests_seconds_count{service=\"product-selection-service\"}[1m])",
+          "legendFormat": "product-selection-service",
+          "refId": "E"
         }
       ],
       "title": "HTTP Request Rate",
@@ -525,9 +611,9 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 6
+        "y": 10
       },
-      "id": 6,
+      "id": 7,
       "options": {
         "legend": {
           "calcs": ["mean", "max"],
@@ -577,6 +663,15 @@
           "expr": "rate(http_server_requests_seconds_sum{service=\"assignment-service\"}[1m]) / rate(http_server_requests_seconds_count{service=\"assignment-service\"}[1m])",
           "legendFormat": "assignment-service",
           "refId": "D"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus_main_uid"
+          },
+          "expr": "rate(http_server_requests_seconds_sum{service=\"product-selection-service\"}[1m]) / rate(http_server_requests_seconds_count{service=\"product-selection-service\"}[1m])",
+          "legendFormat": "product-selection-service",
+          "refId": "E"
         }
       ],
       "title": "HTTP Response Time (Avg)",
@@ -640,9 +735,9 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 14
+        "y": 18
       },
-      "id": 7,
+      "id": 8,
       "options": {
         "legend": {
           "calcs": ["mean", "max"],
@@ -692,6 +787,15 @@
           "expr": "jvm_memory_used_bytes{service=\"assignment-service\", area=\"heap\"}",
           "legendFormat": "assignment-service ({{id}})",
           "refId": "D"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus_main_uid"
+          },
+          "expr": "jvm_memory_used_bytes{service=\"product-selection-service\", area=\"heap\"}",
+          "legendFormat": "product-selection-service ({{id}})",
+          "refId": "E"
         }
       ],
       "title": "JVM Heap Memory Used",
@@ -755,9 +859,9 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 14
+        "y": 18
       },
-      "id": 8,
+      "id": 9,
       "options": {
         "legend": {
           "calcs": ["mean", "max"],
@@ -807,6 +911,15 @@
           "expr": "jvm_threads_live_threads{service=\"assignment-service\"}",
           "legendFormat": "assignment-service",
           "refId": "D"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus_main_uid"
+          },
+          "expr": "jvm_threads_live_threads{service=\"product-selection-service\"}",
+          "legendFormat": "product-selection-service",
+          "refId": "E"
         }
       ],
       "title": "JVM Live Threads",
@@ -870,9 +983,9 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 22
+        "y": 26
       },
-      "id": 9,
+      "id": 10,
       "options": {
         "legend": {
           "calcs": ["mean", "max"],
@@ -922,6 +1035,15 @@
           "expr": "system_cpu_usage{service=\"assignment-service\"}",
           "legendFormat": "assignment-service",
           "refId": "D"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus_main_uid"
+          },
+          "expr": "system_cpu_usage{service=\"product-selection-service\"}",
+          "legendFormat": "product-selection-service",
+          "refId": "E"
         }
       ],
       "title": "System CPU Usage",
@@ -985,9 +1107,9 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 22
+        "y": 26
       },
-      "id": 10,
+      "id": 11,
       "options": {
         "legend": {
           "calcs": ["mean", "max"],
@@ -1037,6 +1159,15 @@
           "expr": "rate(jvm_gc_pause_seconds_count{service=\"assignment-service\"}[1m])",
           "legendFormat": "assignment-service ({{action}})",
           "refId": "D"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus_main_uid"
+          },
+          "expr": "rate(jvm_gc_pause_seconds_count{service=\"product-selection-service\"}[1m])",
+          "legendFormat": "product-selection-service ({{action}})",
+          "refId": "E"
         }
       ],
       "title": "GC Pause Rate",
@@ -1078,9 +1209,9 @@
         "h": 6,
         "w": 8,
         "x": 0,
-        "y": 30
+        "y": 34
       },
-      "id": 11,
+      "id": 12,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
@@ -1144,9 +1275,9 @@
         "h": 6,
         "w": 8,
         "x": 8,
-        "y": 30
+        "y": 34
       },
-      "id": 12,
+      "id": 13,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
@@ -1210,9 +1341,9 @@
         "h": 6,
         "w": 8,
         "x": 16,
-        "y": 30
+        "y": 34
       },
-      "id": 13,
+      "id": 14,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
@@ -1275,10 +1406,10 @@
       "gridPos": {
         "h": 6,
         "w": 8,
-        "x": 24,
-        "y": 30
+        "x": 0,
+        "y": 40
       },
-      "id": 13,
+      "id": 15,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
@@ -1304,6 +1435,72 @@
         }
       ],
       "title": "Assignment Service - 5xx Errors",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus_main_uid"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 50
+              },
+              {
+                "color": "red",
+                "value": 100
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 8,
+        "y": 40
+      },
+      "id": 16,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus_main_uid"
+          },
+          "expr": "sum(rate(http_server_requests_seconds_count{service=\"product-selection-service\", status=~\"5..\"}[5m])) or vector(0)",
+          "legendFormat": "5xx Errors",
+          "refId": "A"
+        }
+      ],
+      "title": "Product Selection Service - 5xx Errors",
       "type": "stat"
     }
   ],

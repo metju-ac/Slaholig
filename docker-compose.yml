@@ -71,6 +71,14 @@ services:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin
       POSTGRES_DB: db
+  postgres-product-selection:
+    image: postgres:17
+    ports:
+      - 5436:5432
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: db
   courses-service:
     image: kotlin-seminar/courses-service
     build:
@@ -135,6 +143,25 @@ services:
     depends_on:
       - axon-server
       - postgres-forum
+      - loki
+      - prometheus
+    environment:
+      spring_profiles_active: prod
+      LOKI_ADD: loki
+      LOKI_PORT: 3100
+    volumes:
+      - ./spring/config:/config
+
+  product-selection-service:
+    image: kotlin-seminar/product-selection-service
+    build:
+      context: .
+      dockerfile: product-selection-service/Dockerfile
+    ports:
+      - 8084:8080
+    depends_on:
+      - axon-server
+      - postgres-product-selection
       - loki
       - prometheus
     environment:
