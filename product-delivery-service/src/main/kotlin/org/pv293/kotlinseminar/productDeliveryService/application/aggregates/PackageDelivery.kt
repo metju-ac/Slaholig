@@ -12,7 +12,10 @@ import org.axonframework.modelling.command.AggregateIdentifier
 import org.axonframework.modelling.command.AggregateLifecycle.apply
 import org.axonframework.spring.stereotype.Aggregate
 import org.pv293.kotlinseminar.productDeliveryService.application.commands.impl.CreatePackageDeliveryCommand
+import org.pv293.kotlinseminar.productDeliveryService.application.commands.impl.MarkDroppedByBakerCommand
 import org.pv293.kotlinseminar.productDeliveryService.events.impl.PackageDeliveryCreatedEvent
+import org.pv293.kotlinseminar.productDeliveryService.events.impl.PackageDroppedByBakerEvent
+import java.math.BigDecimal
 import java.time.Instant
 import java.util.UUID
 
@@ -42,6 +45,18 @@ class PackageDelivery() {
     @Column(name = "created_at")
     lateinit var createdAt: Instant
 
+    @Column(name = "dropped_by_baker_at", nullable = true)
+    var droppedByBakerAt: Instant? = null
+
+    @Column(nullable = true, precision = 10, scale = 7)
+    var latitude: BigDecimal? = null
+
+    @Column(nullable = true, precision = 10, scale = 7)
+    var longitude: BigDecimal? = null
+
+    @Column(nullable = true, length = 500)
+    var photoUrl: String? = null
+
     @CommandHandler
     constructor(command: CreatePackageDeliveryCommand) : this() {
         apply(
@@ -62,5 +77,32 @@ class PackageDelivery() {
         this.transactionId = event.transactionId
         this.status = DeliveryStatus.valueOf(event.status)
         this.createdAt = event.createdAt
+    }
+
+    @CommandHandler
+    fun handle(command: MarkDroppedByBakerCommand) {
+        require(status == DeliveryStatus.CREATED) {
+            "Package must be in CREATED status to be dropped by baker. Current status: $status"
+        }
+
+        apply(
+            PackageDroppedByBakerEvent(
+                deliveryId = command.deliveryId,
+                orderId = this.orderId,
+                droppedAt = Instant.now(),
+                latitude = command.latitude,
+                longitude = command.longitude,
+                photoUrl = command.photoUrl,
+            ),
+        )
+    }
+
+    @EventSourcingHandler
+    fun on(event: PackageDroppedByBakerEvent) {
+        this.status = DeliveryStatus.DROPPED_BY_BAKER
+        this.droppedByBakerAt = event.droppedAt
+        this.latitude = event.latitude
+        this.longitude = event.longitude
+        this.photoUrl = event.photoUrl
     }
 }
