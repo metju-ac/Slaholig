@@ -79,6 +79,14 @@ services:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin
       POSTGRES_DB: db
+  postgres-payment:
+    image: postgres:17
+    ports:
+      - 5437:5432
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: db
   courses-service:
     image: kotlin-seminar/courses-service
     build:
@@ -162,6 +170,25 @@ services:
     depends_on:
       - axon-server
       - postgres-product-selection
+      - loki
+      - prometheus
+    environment:
+      spring_profiles_active: prod
+      LOKI_ADD: loki
+      LOKI_PORT: 3100
+    volumes:
+      - ./spring/config:/config
+
+  payment-service:
+    image: kotlin-seminar/payment-service
+    build:
+      context: .
+      dockerfile: payment-service/Dockerfile
+    ports:
+      - 8085:8080
+    depends_on:
+      - axon-server
+      - postgres-payment
       - loki
       - prometheus
     environment:
