@@ -23,7 +23,7 @@ import org.pv293.kotlinseminar.paymentService.events.impl.FundsReleasedEvent
 import org.pv293.kotlinseminar.paymentService.events.impl.PaymentCreatedEvent
 import org.pv293.kotlinseminar.paymentService.events.impl.PaymentFailedEvent
 import org.pv293.kotlinseminar.paymentService.events.impl.PaymentMarkedPaidEvent
-import org.pv293.kotlinseminar.paymentService.events.impl.PaymentProcessingEvent
+import org.pv293.kotlinseminar.paymentService.events.impl.PaymentProcessingStartedEvent
 import org.pv293.kotlinseminar.paymentService.events.impl.PaymentSucceededEvent
 import java.math.BigDecimal
 import java.util.UUID
@@ -81,7 +81,7 @@ class Payment() {
     ) {
         require(status == PaymentStatus.CREATED || status == PaymentStatus.FAILED) { "Payment must be in CREATED or FAILED status to pay. Current status: $status" }
 
-        apply(PaymentProcessingEvent(orderId = command.orderId, walletAddress = command.walletAddress))
+        apply(PaymentProcessingStartedEvent(orderId = command.orderId, walletAddress = command.walletAddress))
 
         // Call the crypto payment gateway
         val result = cryptoPaymentGatewayService.mockProcessPayment(
@@ -138,7 +138,7 @@ class Payment() {
     }
 
     @EventSourcingHandler
-    fun on(event: PaymentProcessingEvent) {
+    fun on(event: PaymentProcessingStartedEvent) {
         this.status = PaymentStatus.PROCESSING
         this.failureReason = null  // Clear previous failure reason on retry
         this.walletAddress = event.walletAddress  // Store wallet address
