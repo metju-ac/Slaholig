@@ -146,6 +146,15 @@ When running via Docker Compose:
 - Keep `shared` dependency direction one-way: services depend on `shared`, not vice versa.
 - When changing contracts in `shared`, update all services that consume them.
 
+## Next Service Implementation
+
+**IMPORTANT**: If you are implementing the `product-delivery-service`, refer to `NEXT_SERVICE.md` for comprehensive step-by-step instructions. That file contains:
+- Complete implementation guide for the delivery service
+- Event handler/policy patterns for listening to `PaymentMarkedPaidEvent`
+- Mock email notification service setup
+- Docker Compose, Prometheus, and configuration examples
+- Testing and troubleshooting guidance
+
 ## Agent Workflow Expectations
 
 - Before coding, identify the target module (`:courses-service`, etc.).
