@@ -27,11 +27,13 @@ class OrderCreatedEventHandler(
             return
         }
 
-        // Convert shared event DTOs to payment service DTOs
+        // Convert shared event DTOs to payment service DTOs (pass through all fields including prices)
         val items = event.items.map {
             OrderItemDTO(
                 bakedGoodsId = it.bakedGoodsId,
                 quantity = it.quantity,
+                price = it.price,
+                totalPrice = it.totalPrice,
             )
         }
 

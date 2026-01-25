@@ -10,7 +10,7 @@ data class PaymentCreatedEvent(
     val status: PaymentStatus,
 )
 
-data class OrderItemDTO(
-    val bakedGoodsId: UUID,
-    val quantity: Int,
-)
+// OrderItemDTO is now defined in shared module at:
+// org.pv293.kotlinseminar.paymentService.events.impl.OrderItemDTO
+// (in shared/src/main/kotlin/.../OrderCreatedFromCartEvent.kt)
+
