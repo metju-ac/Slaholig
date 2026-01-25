@@ -30,6 +30,13 @@ scrape_configs:
         labels:
           service: 'forum-service'
 
+  - job_name: 'product-selection-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['product-selection-service:8080']
+        labels:
+          service: 'product-selection-service'
+
   - job_name: 'axon-server'
     metrics_path: '/actuator/prometheus'
     static_configs:
