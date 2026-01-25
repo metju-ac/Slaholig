@@ -26,7 +26,6 @@ import org.pv293.kotlinseminar.paymentService.events.impl.PaymentFailedEvent
 import org.pv293.kotlinseminar.paymentService.events.impl.PaymentMarkedPaidEvent
 import org.pv293.kotlinseminar.paymentService.events.impl.PaymentProcessingEvent
 import org.pv293.kotlinseminar.paymentService.events.impl.PaymentSucceededEvent
-import org.slf4j.LoggerFactory
 import java.util.UUID
 
 enum class PaymentStatus {
@@ -41,8 +40,6 @@ enum class PaymentStatus {
 @Aggregate(repository = "paymentAggregateRepository")
 @Table(name = "payment")
 class Payment() {
-    private val logger = LoggerFactory.getLogger(Payment::class.java)
-
     @Id
     @AggregateIdentifier
     lateinit var orderId: UUID
@@ -64,7 +61,6 @@ class Payment() {
 
     @CommandHandler
     constructor(command: CreatePaymentCommand) : this() {
-        logger.info("Creating payment for order ${command.orderId}")
         apply(
             PaymentCreatedEvent(
                 orderId = command.orderId,
@@ -81,7 +77,6 @@ class Payment() {
         cryptoPaymentGatewayService: CryptoPaymentGatewayService,
     ) {
         require(status == PaymentStatus.CREATED) { "Payment must be in CREATED status to pay. Current status: $status" }
-        logger.info("Processing payment for order ${command.orderId}")
 
         apply(PaymentProcessingEvent(orderId = command.orderId))
 
@@ -92,7 +87,6 @@ class Payment() {
         )
 
         if (result.success) {
-            logger.info("Payment succeeded for order ${command.orderId}")
             apply(
                 PaymentSucceededEvent(
                     orderId = command.orderId,
@@ -100,7 +94,6 @@ class Payment() {
                 ),
             )
         } else {
-            logger.error("Payment failed for order ${command.orderId}: ${result.errorMessage}")
             apply(
                 PaymentFailedEvent(
                     orderId = command.orderId,
@@ -115,7 +108,6 @@ class Payment() {
         require(status == PaymentStatus.PROCESSING) {
             "Payment must be in PROCESSING status to mark as paid. Current status: $status"
         }
-        logger.info("Marking payment as PAID for order ${command.orderId}")
 
         apply(
             PaymentMarkedPaidEvent(
@@ -130,7 +122,6 @@ class Payment() {
         require(status == PaymentStatus.PAID) {
             "Payment must be in PAID status to release funds. Current status: $status"
         }
-        logger.info("Releasing funds for order ${command.orderId}")
 
         apply(FundsReleasedEvent(orderId = command.orderId))
     }
