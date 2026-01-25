@@ -92,6 +92,14 @@ services:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin
       POSTGRES_DB: db
+  postgres-courier:
+    image: postgres:17
+    ports:
+      - 5439:5432
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: db
   courses-service:
     image: kotlin-seminar/courses-service
     build:
@@ -213,6 +221,25 @@ services:
     depends_on:
       - axon-server
       - postgres-product-delivery
+      - loki
+      - prometheus
+    environment:
+      spring_profiles_active: prod
+      LOKI_ADD: loki
+      LOKI_PORT: 3100
+    volumes:
+      - ./spring/config:/config:z
+
+  courier-service:
+    image: kotlin-seminar/courier-service
+    build:
+      context: .
+      dockerfile: courier-service/Dockerfile
+    ports:
+      - 8087:8080
+    depends_on:
+      - axon-server
+      - postgres-courier
       - loki
       - prometheus
     environment:
