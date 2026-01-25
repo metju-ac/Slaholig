@@ -33,4 +33,4 @@ COPY axon ./axon
 EXPOSE 8080
 
 USER app-user
-CMD ["java", "-jar", "app.jar"]
+CMD ["java", "-jar", "app.jar", "--spring.config.additional-location=/config/payment-service/"]
