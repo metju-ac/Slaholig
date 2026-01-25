@@ -76,7 +76,7 @@ class Payment() {
         command: PayOrderCommand,
         cryptoPaymentGatewayService: CryptoPaymentGatewayService,
     ) {
-        require(status == PaymentStatus.CREATED) { "Payment must be in CREATED status to pay. Current status: $status" }
+        require(status == PaymentStatus.CREATED || status == PaymentStatus.FAILED) { "Payment must be in CREATED or FAILED status to pay. Current status: $status" }
 
         apply(PaymentProcessingEvent(orderId = command.orderId))
 
@@ -142,6 +142,7 @@ class Payment() {
     @EventSourcingHandler
     fun on(event: PaymentProcessingEvent) {
         this.status = PaymentStatus.PROCESSING
+        this.failureReason = null  // Clear previous failure reason on retry
     }
 
     @EventSourcingHandler
