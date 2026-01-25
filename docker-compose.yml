@@ -1,7 +1,4 @@
-version: '3'
-
 services:
-  #  docker run -d --name axonserver -p 8024:8024 -p 8124:8124 axoniq/axonserver
   axon-server:
     image: axoniq/axonserver:latest
     ports:
@@ -12,13 +9,13 @@ services:
     volumes:
       - axon-data:/data
       - axon-eventdata:/eventdata
-      - ./axon/config:/config
+      - ./axon/config:/config:Z
   prometheus:
     image: prom/prometheus
     ports:
       - 9090:9090
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:Z
     depends_on:
       - axon-server
   loki:
@@ -31,9 +28,9 @@ services:
     ports:
       - 3000:3000
     volumes:
-      - ./grafana/datasources:/etc/grafana/provisioning/datasources
-      - ./grafana/dashboards:/var/lib/grafana/dashboards/
-      - ./grafana/dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml
+      - ./grafana/datasources:/etc/grafana/provisioning/datasources:Z
+      - ./grafana/dashboards:/var/lib/grafana/dashboards/:Z
+      - ./grafana/dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml:Z
     depends_on:
       - prometheus
     environment:
@@ -112,7 +109,7 @@ services:
       LOKI_ADD: loki
       LOKI_PORT: 3100
     volumes:
-      - ./spring/config:/config
+      - ./spring/config:/config:z
   enrollment-service:
     image: kotlin-seminar/enrollment-service
     build:
@@ -130,7 +127,7 @@ services:
       LOKI_ADD: loki
       LOKI_PORT: 3100
     volumes:
-      - ./spring/config:/config
+      - ./spring/config:/config:z
   forum-service:
     image: kotlin-seminar/forum-service
     build:
@@ -148,7 +145,7 @@ services:
       LOKI_ADD: loki
       LOKI_PORT: 3100
     volumes:
-      - ./spring/config:/config
+      - ./spring/config:/config:z
   assignment-service:
     image: kotlin-seminar/assignment-service
     build:
@@ -166,7 +163,7 @@ services:
       LOKI_ADD: loki
       LOKI_PORT: 3100
     volumes:
-      - ./spring/config:/config
+      - ./spring/config:/config:z
 
   product-selection-service:
     image: kotlin-seminar/product-selection-service
@@ -185,7 +182,7 @@ services:
       LOKI_ADD: loki
       LOKI_PORT: 3100
     volumes:
-      - ./spring/config:/config
+      - ./spring/config:/config:z
 
   payment-service:
     image: kotlin-seminar/payment-service
@@ -204,7 +201,7 @@ services:
       LOKI_ADD: loki
       LOKI_PORT: 3100
     volumes:
-      - ./spring/config:/config
+      - ./spring/config:/config:z
 
   product-delivery-service:
     image: kotlin-seminar/product-delivery-service
@@ -223,10 +220,7 @@ services:
       LOKI_ADD: loki
       LOKI_PORT: 3100
     volumes:
-      - ./spring/config:/config
-
-
-
+      - ./spring/config:/config:z
 
 volumes:
   axon-data:
