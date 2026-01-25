@@ -1,4 +1,4 @@
-package org.pv293.kotlinseminar.productDeliveryService.application.policies
+package org.pv293.kotlinseminar.productDeliveryService.events.handlers
 
 import org.axonframework.eventhandling.EventHandler
 import org.pv293.kotlinseminar.paymentService.events.impl.PaymentMarkedPaidEvent
@@ -7,10 +7,10 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
 @Component
-class DeliveryPolicies(
+class PaymentMarkedPaidEventHandler(
     private val emailNotificationService: EmailNotificationService,
 ) {
-    private val logger = LoggerFactory.getLogger(DeliveryPolicies::class.java)
+    private val logger = LoggerFactory.getLogger(PaymentMarkedPaidEventHandler::class.java)
 
     @EventHandler
     fun on(event: PaymentMarkedPaidEvent) {
