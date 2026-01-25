@@ -36,7 +36,7 @@
           "showLineNumbers": false,
           "showMiniMap": false
         },
-        "content": "# Spring Boot Microservices Dashboard\n**Services:** courses-service | enrollment-service | forum-service | assignment-service | product-selection-service",
+        "content": "# Spring Boot Microservices Dashboard\n**Services:** courses-service | enrollment-service | forum-service | assignment-service | product-selection-service | payment-service",
         "mode": "markdown"
       },
       "pluginVersion": "10.0.0",
@@ -437,6 +437,83 @@
       "fieldConfig": {
         "defaults": {
           "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "red",
+                  "index": 1,
+                  "text": "DOWN"
+                },
+                "1": {
+                  "color": "green",
+                  "index": 0,
+                  "text": "UP"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 8,
+        "y": 6
+      },
+      "id": 17,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus_main_uid"
+          },
+          "expr": "up{service=\"payment-service\"}",
+          "legendFormat": "payment-service",
+          "refId": "A"
+        }
+      ],
+      "title": "Payment Service",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus_main_uid"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
             "mode": "palette-classic"
           },
           "custom": {
@@ -548,6 +625,15 @@
           "expr": "rate(http_server_requests_seconds_count{service=\"product-selection-service\"}[1m])",
           "legendFormat": "product-selection-service",
           "refId": "E"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus_main_uid"
+          },
+          "expr": "rate(http_server_requests_seconds_count{service=\"payment-service\"}[1m])",
+          "legendFormat": "payment-service",
+          "refId": "F"
         }
       ],
       "title": "HTTP Request Rate",
@@ -672,6 +758,15 @@
           "expr": "rate(http_server_requests_seconds_sum{service=\"product-selection-service\"}[1m]) / rate(http_server_requests_seconds_count{service=\"product-selection-service\"}[1m])",
           "legendFormat": "product-selection-service",
           "refId": "E"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus_main_uid"
+          },
+          "expr": "rate(http_server_requests_seconds_sum{service=\"payment-service\"}[1m]) / rate(http_server_requests_seconds_count{service=\"payment-service\"}[1m])",
+          "legendFormat": "payment-service",
+          "refId": "F"
         }
       ],
       "title": "HTTP Response Time (Avg)",
@@ -796,6 +891,15 @@
           "expr": "jvm_memory_used_bytes{service=\"product-selection-service\", area=\"heap\"}",
           "legendFormat": "product-selection-service ({{id}})",
           "refId": "E"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus_main_uid"
+          },
+          "expr": "jvm_memory_used_bytes{service=\"payment-service\", area=\"heap\"}",
+          "legendFormat": "payment-service ({{id}})",
+          "refId": "F"
         }
       ],
       "title": "JVM Heap Memory Used",
@@ -920,6 +1024,15 @@
           "expr": "jvm_threads_live_threads{service=\"product-selection-service\"}",
           "legendFormat": "product-selection-service",
           "refId": "E"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus_main_uid"
+          },
+          "expr": "jvm_threads_live_threads{service=\"payment-service\"}",
+          "legendFormat": "payment-service",
+          "refId": "F"
         }
       ],
       "title": "JVM Live Threads",
@@ -1044,6 +1157,15 @@
           "expr": "system_cpu_usage{service=\"product-selection-service\"}",
           "legendFormat": "product-selection-service",
           "refId": "E"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus_main_uid"
+          },
+          "expr": "system_cpu_usage{service=\"payment-service\"}",
+          "legendFormat": "payment-service",
+          "refId": "F"
         }
       ],
       "title": "System CPU Usage",
@@ -1168,6 +1290,15 @@
           "expr": "rate(jvm_gc_pause_seconds_count{service=\"product-selection-service\"}[1m])",
           "legendFormat": "product-selection-service ({{action}})",
           "refId": "E"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus_main_uid"
+          },
+          "expr": "rate(jvm_gc_pause_seconds_count{service=\"payment-service\"}[1m])",
+          "legendFormat": "payment-service ({{action}})",
+          "refId": "F"
         }
       ],
       "title": "GC Pause Rate",
@@ -1501,6 +1632,72 @@
         }
       ],
       "title": "Product Selection Service - 5xx Errors",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus_main_uid"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 50
+              },
+              {
+                "color": "red",
+                "value": 100
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 16,
+        "y": 40
+      },
+      "id": 18,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus_main_uid"
+          },
+          "expr": "sum(rate(http_server_requests_seconds_count{service=\"payment-service\", status=~\"5..\"}[5m])) or vector(0)",
+          "legendFormat": "5xx Errors",
+          "refId": "A"
+        }
+      ],
+      "title": "Payment Service - 5xx Errors",
       "type": "stat"
     }
   ],
