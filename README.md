@@ -16,22 +16,6 @@ docker compose up
 
 Once the services are running, you can access the interactive API documentation for each microservice:
 
-### Courses Service
-- **Swagger UI**: http://localhost:8081/swagger-ui.html
-- **OpenAPI Spec**: http://localhost:8081/api-docs
-
-### Enrollment Service
-- **Swagger UI**: http://localhost:8080/swagger-ui.html
-- **OpenAPI Spec**: http://localhost:8080/api-docs
-
-### Forum Service
-- **Swagger UI**: http://localhost:8082/swagger-ui.html
-- **OpenAPI Spec**: http://localhost:8082/api-docs
-
-### Assignment Service
-- **Swagger UI**: http://localhost:8083/swagger-ui.html
-- **OpenAPI Spec**: http://localhost:8083/api-docs
-
 ### Product Selection Service
 - **Swagger UI**: http://localhost:8084/swagger-ui.html
 - **OpenAPI Spec**: http://localhost:8084/api-docs
