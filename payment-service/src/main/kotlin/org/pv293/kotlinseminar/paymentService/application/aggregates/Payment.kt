@@ -25,6 +25,7 @@ import org.pv293.kotlinseminar.paymentService.events.impl.PaymentFailedEvent
 import org.pv293.kotlinseminar.paymentService.events.impl.PaymentMarkedPaidEvent
 import org.pv293.kotlinseminar.paymentService.events.impl.PaymentProcessingEvent
 import org.pv293.kotlinseminar.paymentService.events.impl.PaymentSucceededEvent
+import java.math.BigDecimal
 import java.util.UUID
 
 enum class PaymentStatus {
@@ -129,6 +130,8 @@ class Payment() {
             PaymentItem(
                 bakedGoodsId = it.bakedGoodsId,
                 quantity = it.quantity,
+                price = it.price,
+                totalPrice = it.totalPrice,
             )
         }.toMutableList()
         this.status = event.status
@@ -169,4 +172,8 @@ class Payment() {
 data class PaymentItem(
     var bakedGoodsId: UUID = UUID.randomUUID(),
     var quantity: Int = 0,
+    @Column(precision = 19, scale = 2)
+    var price: BigDecimal = BigDecimal.ZERO,
+    @Column(precision = 19, scale = 2)
+    var totalPrice: BigDecimal = BigDecimal.ZERO,
 )

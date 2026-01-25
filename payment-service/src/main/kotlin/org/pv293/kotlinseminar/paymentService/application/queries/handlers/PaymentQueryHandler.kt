@@ -23,6 +23,8 @@ class PaymentQueryHandler(
                 PaymentItemDTO(
                     bakedGoodsId = it.bakedGoodsId,
                     quantity = it.quantity,
+                    price = it.price,
+                    totalPrice = it.totalPrice,
                 )
             },
             status = payment.status,
