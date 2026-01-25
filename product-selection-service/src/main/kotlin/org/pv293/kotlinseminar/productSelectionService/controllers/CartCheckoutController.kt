@@ -7,7 +7,9 @@ import io.swagger.v3.oas.annotations.Parameter
 import org.axonframework.commandhandling.gateway.CommandGateway
 import org.pv293.kotlinseminar.productSelectionService.application.commands.impl.CreateOrderFromCartCommand
 import org.pv293.kotlinseminar.productSelectionService.application.dto.CreateOrderFromCartResponseDTO
+import org.pv293.kotlinseminar.productSelectionService.repository.BakedGoodRepository
 import org.pv293.kotlinseminar.productSelectionService.repository.ShoppingCartRepository
+import org.pv293.kotlinseminar.paymentService.events.impl.OrderItemDTO
 import org.slf4j.LoggerFactory
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -20,6 +22,7 @@ import java.util.UUID
 class CartCheckoutController(
     private val commandGateway: CommandGateway,
     private val shoppingCartRepository: ShoppingCartRepository,
+    private val bakedGoodRepository: BakedGoodRepository,
 ) {
     private val logger = LoggerFactory.getLogger(CartCheckoutController::class.java)
 
@@ -39,8 +42,23 @@ class CartCheckoutController(
         val cartUUID = UUID.fromString(cartId)
         logger.info("Creating order from cart $cartId")
 
-        if (!shoppingCartRepository.existsById(cartUUID)) {
-            throw IllegalArgumentException("Shopping cart with id $cartUUID not found")
+        val cart = shoppingCartRepository.findById(cartUUID).orElseThrow {
+            IllegalArgumentException("Shopping cart with id $cartUUID not found")
+        }
+
+        require(cart.items.isNotEmpty()) { "Cart is empty" }
+
+        // Fetch current prices for all items and create enriched OrderItemDTOs
+        val enrichedItems = cart.items.map { cartItem ->
+            val bakedGood = bakedGoodRepository.findById(cartItem.bakedGoodsId).orElseThrow {
+                IllegalArgumentException("BakedGood with id ${cartItem.bakedGoodsId} not found")
+            }
+            OrderItemDTO(
+                bakedGoodsId = cartItem.bakedGoodsId,
+                quantity = cartItem.quantity,
+                price = bakedGood.price,
+                totalPrice = bakedGood.price.multiply(cartItem.quantity.toBigDecimal()),
+            )
         }
 
         val orderId = UUID.randomUUID()
@@ -48,6 +66,7 @@ class CartCheckoutController(
             CreateOrderFromCartCommand(
                 cartId = cartUUID,
                 orderId = orderId,
+                items = enrichedItems,
             ),
         )
 
