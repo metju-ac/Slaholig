@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import java.math.BigDecimal
 import java.util.UUID
 
 @RestController
@@ -38,6 +39,7 @@ class DevSeedController(
                 name = "Sourdough loaf",
                 description = "Crusty and tangy",
                 initialStock = 12,
+                price = BigDecimal("4.99"),
                 latitude = 49.1951,
                 longitude = 16.6068,
             ),
@@ -45,6 +47,7 @@ class DevSeedController(
                 name = "Cinnamon roll",
                 description = "Fresh out of the oven",
                 initialStock = 30,
+                price = BigDecimal("2.49"),
                 latitude = 49.2000,
                 longitude = 16.6100,
             ),
@@ -52,6 +55,7 @@ class DevSeedController(
                 name = "Chocolate croissant",
                 description = "Buttery layers",
                 initialStock = 20,
+                price = BigDecimal("3.99"),
                 latitude = 48.2082,
                 longitude = 16.3738,
             ),
@@ -59,6 +63,7 @@ class DevSeedController(
                 name = "Blueberry muffin",
                 description = "Berries and crumble",
                 initialStock = 25,
+                price = BigDecimal("2.99"),
                 latitude = 50.0755,
                 longitude = 14.4378,
             ),
@@ -71,6 +76,7 @@ class DevSeedController(
                     name = seed.name,
                     description = seed.description,
                     initialStock = seed.initialStock,
+                    price = seed.price,
                     latitude = seed.latitude,
                     longitude = seed.longitude,
                 ),
@@ -90,6 +96,7 @@ private data class SeedGood(
     val name: String,
     val description: String?,
     val initialStock: Int,
+    val price: BigDecimal,
     val latitude: Double,
     val longitude: Double,
 )
