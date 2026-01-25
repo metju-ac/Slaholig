@@ -36,6 +36,10 @@ class PackageDeliveryQueryHandler(
                 transactionId = it.transactionId,
                 status = it.status.name,
                 createdAt = it.createdAt,
+                droppedByBakerAt = it.droppedByBakerAt,
+                latitude = it.latitude,
+                longitude = it.longitude,
+                photoUrl = it.photoUrl,
             )
         }
     }
