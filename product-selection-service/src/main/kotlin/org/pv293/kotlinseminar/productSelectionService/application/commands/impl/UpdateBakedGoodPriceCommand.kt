@@ -4,13 +4,8 @@ import org.axonframework.modelling.command.TargetAggregateIdentifier
 import java.math.BigDecimal
 import java.util.UUID
 
-data class PublishBakedGoodsCommand(
+data class UpdateBakedGoodPriceCommand(
     @TargetAggregateIdentifier
-    val id: UUID,
-    val name: String,
-    val description: String?,
-    val initialStock: Int,
-    val price: BigDecimal,
-    val latitude: Double,
-    val longitude: Double,
+    val bakedGoodsId: UUID,
+    val newPrice: BigDecimal,
 )

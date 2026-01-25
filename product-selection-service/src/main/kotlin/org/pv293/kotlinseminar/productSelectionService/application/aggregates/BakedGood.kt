@@ -16,9 +16,12 @@ import org.axonframework.spring.stereotype.Aggregate
 import org.pv293.kotlinseminar.productSelectionService.application.commands.impl.AddBakedGoodsReviewCommand
 import org.pv293.kotlinseminar.productSelectionService.application.commands.impl.PublishBakedGoodsCommand
 import org.pv293.kotlinseminar.productSelectionService.application.commands.impl.RestockBakedGoodsCommand
+import org.pv293.kotlinseminar.productSelectionService.application.commands.impl.UpdateBakedGoodPriceCommand
+import org.pv293.kotlinseminar.productSelectionService.events.impl.BakedGoodPriceUpdatedEvent
 import org.pv293.kotlinseminar.productSelectionService.events.impl.BakedGoodsPublishedEvent
 import org.pv293.kotlinseminar.productSelectionService.events.impl.BakedGoodsReviewAddedEvent
 import org.pv293.kotlinseminar.productSelectionService.events.impl.BakedGoodsRestockedEvent
+import java.math.BigDecimal
 import java.util.UUID
 
 @Entity
@@ -45,6 +48,9 @@ class BakedGood() {
     @Column(name = "longitude")
     var longitude: Double = 0.0
 
+    @Column(name = "price", precision = 19, scale = 2)
+    lateinit var price: BigDecimal
+
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "bakedGood", cascade = [CascadeType.ALL])
     @AggregateMember(eventForwardingMode = ForwardMatchingInstances::class)
     open var reviews: MutableList<BakedGoodReview> = mutableListOf()
@@ -52,11 +58,13 @@ class BakedGood() {
     @CommandHandler
     constructor(command: PublishBakedGoodsCommand) : this() {
         require(command.initialStock >= 0) { "Initial stock must be >= 0" }
+        require(command.price >= BigDecimal.ZERO) { "Price must be non-negative" }
 
         id = command.id
         name = command.name
         description = command.description
         stock = command.initialStock
+        price = command.price
         latitude = command.latitude
         longitude = command.longitude
 
@@ -66,6 +74,7 @@ class BakedGood() {
                 name = command.name,
                 description = command.description,
                 initialStock = command.initialStock,
+                price = command.price,
                 latitude = command.latitude,
                 longitude = command.longitude,
             ),
@@ -106,6 +115,21 @@ class BakedGood() {
                 authorId = command.authorId,
                 rating = command.rating,
                 content = command.content,
+            ),
+        )
+    }
+
+    @CommandHandler
+    fun handle(command: UpdateBakedGoodPriceCommand) {
+        require(command.newPrice >= BigDecimal.ZERO) { "Price must be non-negative" }
+
+        val oldPrice = price
+        price = command.newPrice
+        apply(
+            BakedGoodPriceUpdatedEvent(
+                bakedGoodsId = id,
+                oldPrice = oldPrice,
+                newPrice = command.newPrice,
             ),
         )
     }

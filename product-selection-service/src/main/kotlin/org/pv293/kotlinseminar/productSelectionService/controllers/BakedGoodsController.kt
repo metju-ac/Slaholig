@@ -9,9 +9,11 @@ import org.axonframework.messaging.responsetypes.ResponseTypes
 import org.axonframework.queryhandling.QueryGateway
 import org.pv293.kotlinseminar.productSelectionService.application.commands.impl.PublishBakedGoodsCommand
 import org.pv293.kotlinseminar.productSelectionService.application.commands.impl.RestockBakedGoodsCommand
+import org.pv293.kotlinseminar.productSelectionService.application.commands.impl.UpdateBakedGoodPriceCommand
 import org.pv293.kotlinseminar.productSelectionService.application.dto.BakedGoodDTO
 import org.pv293.kotlinseminar.productSelectionService.application.dto.PublishBakedGoodsRequestDTO
 import org.pv293.kotlinseminar.productSelectionService.application.dto.RestockBakedGoodsRequestDTO
+import org.pv293.kotlinseminar.productSelectionService.application.dto.UpdateBakedGoodPriceRequestDTO
 import org.pv293.kotlinseminar.productSelectionService.application.queries.impl.BakedGoodQuery
 import org.pv293.kotlinseminar.productSelectionService.application.queries.impl.BakedGoodsQuery
 import org.slf4j.LoggerFactory
@@ -49,6 +51,7 @@ class BakedGoodsController(
                 name = request.name,
                 description = request.description,
                 initialStock = request.initialStock,
+                price = request.price,
                 latitude = request.latitude,
                 longitude = request.longitude,
             ),
@@ -75,6 +78,30 @@ class BakedGoodsController(
             RestockBakedGoodsCommand(
                 id = id,
                 amount = request.amount,
+            ),
+        )
+
+        return queryGateway.query(BakedGoodQuery(id), BakedGoodDTO::class.java).get()
+    }
+
+    @PatchMapping("/{bakedGoodsId}/price")
+    @Operation(summary = "Update baked good price")
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "200", description = "Price updated successfully"),
+        ],
+    )
+    fun updateBakedGoodPrice(
+        @Parameter(example = "22222222-2222-2222-2222-222222222222")
+        @PathVariable bakedGoodsId: String,
+        @RequestBody request: UpdateBakedGoodPriceRequestDTO,
+    ): BakedGoodDTO {
+        logger.info("Updating price for baked good with id: $bakedGoodsId to: ${request.newPrice}")
+        val id = UUID.fromString(bakedGoodsId)
+        commandGateway.sendAndWait<Unit>(
+            UpdateBakedGoodPriceCommand(
+                bakedGoodsId = id,
+                newPrice = request.newPrice,
             ),
         )
 

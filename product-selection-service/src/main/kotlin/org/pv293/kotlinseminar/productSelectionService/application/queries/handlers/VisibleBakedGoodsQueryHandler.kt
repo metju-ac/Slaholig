@@ -40,6 +40,7 @@ class VisibleBakedGoodsQueryHandler(
                     name = it.name,
                     description = it.description,
                     stock = it.stock,
+                    price = it.price,
                     latitude = it.latitude,
                     longitude = it.longitude,
                 )
