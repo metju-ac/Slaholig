@@ -68,12 +68,10 @@ Tips:
 
 When running via Docker Compose:
 
-- Enrollment: http://localhost:8080/swagger-ui.html
-- Courses: http://localhost:8081/swagger-ui.html
-- Forum: http://localhost:8082/swagger-ui.html
-- Assignment: http://localhost:8083/swagger-ui.html
-- Product Selection: http://localhost:8084/swagger-ui.html
-- Payment: http://localhost:8085/swagger-ui.html
+- Product Selection: http://localhost:8080/swagger-ui.html
+- Payment: http://localhost:8081/swagger-ui.html
+- Product Delivery: http://localhost:8082/swagger-ui.html
+- Courier: http://localhost:8083/swagger-ui.html
 
 ## Code Style Guidelines (Kotlin / Spring Boot)
 

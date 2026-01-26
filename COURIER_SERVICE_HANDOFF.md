@@ -25,7 +25,7 @@ This document tracks the implementation status of the **`courier-service`** micr
 
 ## What Has Been Implemented
 
-### 1. courier-service Module (Port 8087)
+### 1. courier-service Module (Port 8083)
 
 **Directory Structure:**
 ```
@@ -334,9 +334,9 @@ var deliveredAt: Instant? = null
 
 | Service | Port (Docker) | Postgres Port |
 |---------|---------------|---------------|
-| courier-service | 8087 | 5439 |
+| courier-service | 8083 | 5439 |
 
-**Swagger UI:** http://localhost:8087/swagger-ui.html
+**Swagger UI:** http://localhost:8083/swagger-ui.html
 
 ---
 
@@ -349,7 +349,7 @@ docker compose up
 
 ### 2. Mark a courier as available
 ```bash
-curl -X PUT http://localhost:8087/couriers/11111111-1111-1111-1111-111111111111/available \
+curl -X PUT http://localhost:8083/couriers/11111111-1111-1111-1111-111111111111/available \
   -H "Content-Type: application/json" \
   -d '{"latitude": 49.2, "longitude": 16.6}'
 ```
@@ -359,19 +359,19 @@ Use product-selection-service and payment-service endpoints.
 
 ### 4. Drop package by baker
 ```bash
-curl -X PUT http://localhost:8086/deliveries/{deliveryId}/drop-by-baker \
+curl -X PUT http://localhost:8082/deliveries/{deliveryId}/drop-by-baker \
   -H "Content-Type: application/json" \
   -d '{"latitude": 49.2, "longitude": 16.6, "photoUrl": "https://example.com/photo.jpg"}'
 ```
 
 ### 5. Check courier received offer
 ```bash
-curl http://localhost:8087/delivery-offers?courierId=11111111-1111-1111-1111-111111111111
+curl http://localhost:8083/delivery-offers?courierId=11111111-1111-1111-1111-111111111111
 ```
 
 ### 6. Accept the offer
 ```bash
-curl -X POST http://localhost:8087/delivery-offers/{offerId}/accept \
+curl -X POST http://localhost:8083/delivery-offers/{offerId}/accept \
   -H "Content-Type: application/json" \
   -d '{"courierId": "11111111-1111-1111-1111-111111111111"}'
 ```
