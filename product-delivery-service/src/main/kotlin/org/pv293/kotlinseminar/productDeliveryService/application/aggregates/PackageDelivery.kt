@@ -14,11 +14,14 @@ import org.axonframework.spring.stereotype.Aggregate
 import org.pv293.kotlinseminar.productDeliveryService.application.commands.impl.AssignCourierCommand
 import org.pv293.kotlinseminar.productDeliveryService.application.commands.impl.CreatePackageDeliveryCommand
 import org.pv293.kotlinseminar.productDeliveryService.application.commands.impl.MarkDroppedByBakerCommand
+import org.pv293.kotlinseminar.productDeliveryService.application.commands.impl.MarkDroppedByCourierCommand
 import org.pv293.kotlinseminar.productDeliveryService.application.commands.impl.MarkPickedUpByCourierCommand
 import org.pv293.kotlinseminar.productDeliveryService.events.impl.CourierAssignedEvent
 import org.pv293.kotlinseminar.productDeliveryService.events.impl.PackageDeliveryCreatedEvent
 import org.pv293.kotlinseminar.productDeliveryService.events.impl.PackageDroppedByBakerEvent
+import org.pv293.kotlinseminar.productDeliveryService.events.impl.PackageDroppedByCourierEvent
 import org.pv293.kotlinseminar.productDeliveryService.events.impl.PackagePickedUpByCourierEvent
+import org.pv293.kotlinseminar.shared.utils.GeoDistanceCalculator
 import java.math.BigDecimal
 import java.time.Instant
 import java.util.UUID
@@ -192,5 +195,51 @@ class PackageDelivery() {
     fun on(event: PackagePickedUpByCourierEvent) {
         this.status = DeliveryStatus.IN_TRANSIT
         this.pickedUpAt = event.pickedUpAt
+    }
+
+    @CommandHandler
+    fun handle(command: MarkDroppedByCourierCommand) {
+        require(status == DeliveryStatus.IN_TRANSIT) {
+            "Package must be IN_TRANSIT to be dropped by courier. Current status: $status"
+        }
+        require(courierId == command.courierId) {
+            "Package is assigned to courier $courierId, not ${command.courierId}"
+        }
+        require(customerLatitude != null && customerLongitude != null) {
+            "Customer delivery address not set for this delivery"
+        }
+
+        // Validate drop location is within 100m of customer address
+        val distanceMeters = GeoDistanceCalculator.calculateDistanceMeters(
+            command.latitude,
+            command.longitude,
+            customerLatitude!!,
+            customerLongitude!!
+        )
+
+        require(distanceMeters <= 100.0) {
+            "Drop location is ${distanceMeters.toInt()}m from customer address (max 100m allowed)"
+        }
+
+        apply(
+            PackageDroppedByCourierEvent(
+                deliveryId = deliveryId,
+                orderId = orderId,
+                courierId = command.courierId,
+                droppedAt = Instant.now(),
+                latitude = command.latitude,
+                longitude = command.longitude,
+                photoUrl = command.photoUrl,
+            )
+        )
+    }
+
+    @EventSourcingHandler
+    fun on(event: PackageDroppedByCourierEvent) {
+        this.status = DeliveryStatus.DROPPED_BY_COURIER
+        this.droppedByCourierAt = event.droppedAt
+        this.courierDropLatitude = event.latitude
+        this.courierDropLongitude = event.longitude
+        this.courierDropPhotoUrl = event.photoUrl
     }
 }
