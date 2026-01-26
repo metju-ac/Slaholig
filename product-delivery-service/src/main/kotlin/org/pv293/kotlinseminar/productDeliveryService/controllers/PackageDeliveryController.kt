@@ -8,9 +8,7 @@ import org.axonframework.commandhandling.gateway.CommandGateway
 import org.axonframework.queryhandling.QueryGateway
 import org.pv293.kotlinseminar.productDeliveryService.application.commands.impl.MarkDroppedByBakerCommand
 import org.pv293.kotlinseminar.productDeliveryService.application.commands.impl.MarkPickedUpByCourierCommand
-import org.pv293.kotlinseminar.productDeliveryService.application.dto.DeliveryLocationDTO
 import org.pv293.kotlinseminar.productDeliveryService.application.dto.PackageDeliveryDTO
-import org.pv293.kotlinseminar.productDeliveryService.application.queries.impl.DeliveryLocationQuery
 import org.pv293.kotlinseminar.productDeliveryService.application.queries.impl.PackageDeliveryQuery
 import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
@@ -109,29 +107,6 @@ class PackageDeliveryController(
         ).join()
 
         return ResponseEntity.ok(delivery)
-    }
-
-    @GetMapping("/{deliveryId}/location")
-    @Operation(summary = "Get drop location for package (for couriers)")
-    @ApiResponses(
-        value = [
-            ApiResponse(responseCode = "200", description = "Location found"),
-            ApiResponse(responseCode = "404", description = "Location not found (package not dropped yet)"),
-        ],
-    )
-    fun getDeliveryLocation(@PathVariable deliveryId: String): ResponseEntity<DeliveryLocationDTO> {
-        logger.info("GET /deliveries/{}/location", deliveryId)
-
-        val location = queryGateway.query(
-            DeliveryLocationQuery(deliveryId = UUID.fromString(deliveryId)),
-            DeliveryLocationDTO::class.java,
-        ).join()
-
-        return if (location != null) {
-            ResponseEntity.ok(location)
-        } else {
-            ResponseEntity.notFound().build()
-        }
     }
 
     @PutMapping("/{deliveryId}/pickup")
