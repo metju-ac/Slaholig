@@ -9,6 +9,7 @@ import org.axonframework.queryhandling.QueryGateway
 import org.pv293.kotlinseminar.productDeliveryService.application.commands.impl.MarkDroppedByBakerCommand
 import org.pv293.kotlinseminar.productDeliveryService.application.commands.impl.MarkDroppedByCourierCommand
 import org.pv293.kotlinseminar.productDeliveryService.application.commands.impl.MarkPickedUpByCourierCommand
+import org.pv293.kotlinseminar.productDeliveryService.application.commands.impl.RetrievePackageCommand
 import org.pv293.kotlinseminar.productDeliveryService.application.dto.PackageDeliveryDTO
 import org.pv293.kotlinseminar.productDeliveryService.application.queries.impl.PackageDeliveryQuery
 import org.slf4j.LoggerFactory
@@ -179,6 +180,37 @@ class PackageDeliveryController(
                 latitude = request.latitude,
                 longitude = request.longitude,
                 photoUrl = request.photoUrl,
+            ),
+        )
+
+        // Query updated state
+        val delivery = queryGateway.query(
+            PackageDeliveryQuery(deliveryId = deliveryUUID),
+            PackageDeliveryDTO::class.java,
+        ).join()
+
+        return ResponseEntity.ok(delivery)
+    }
+
+    @PutMapping("/{deliveryId}/retrieve")
+    @Operation(summary = "Mark package as retrieved by customer")
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "200", description = "Package retrieved successfully"),
+            ApiResponse(responseCode = "400", description = "Invalid status or package already retrieved"),
+            ApiResponse(responseCode = "404", description = "Delivery not found"),
+        ],
+    )
+    fun retrievePackage(
+        @PathVariable deliveryId: String,
+    ): ResponseEntity<PackageDeliveryDTO> {
+        logger.info("PUT /deliveries/{}/retrieve", deliveryId)
+
+        val deliveryUUID = UUID.fromString(deliveryId)
+
+        commandGateway.sendAndWait<Any>(
+            RetrievePackageCommand(
+                deliveryId = deliveryUUID,
             ),
         )
 

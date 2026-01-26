@@ -16,11 +16,13 @@ import org.pv293.kotlinseminar.productDeliveryService.application.commands.impl.
 import org.pv293.kotlinseminar.productDeliveryService.application.commands.impl.MarkDroppedByBakerCommand
 import org.pv293.kotlinseminar.productDeliveryService.application.commands.impl.MarkDroppedByCourierCommand
 import org.pv293.kotlinseminar.productDeliveryService.application.commands.impl.MarkPickedUpByCourierCommand
+import org.pv293.kotlinseminar.productDeliveryService.application.commands.impl.RetrievePackageCommand
 import org.pv293.kotlinseminar.productDeliveryService.events.impl.CourierAssignedEvent
 import org.pv293.kotlinseminar.productDeliveryService.events.impl.PackageDeliveryCreatedEvent
 import org.pv293.kotlinseminar.productDeliveryService.events.impl.PackageDroppedByBakerEvent
 import org.pv293.kotlinseminar.productDeliveryService.events.impl.PackageDroppedByCourierEvent
 import org.pv293.kotlinseminar.productDeliveryService.events.impl.PackagePickedUpByCourierEvent
+import org.pv293.kotlinseminar.productDeliveryService.events.impl.PackageRetrievedEvent
 import org.pv293.kotlinseminar.shared.utils.GeoDistanceCalculator
 import java.math.BigDecimal
 import java.time.Instant
@@ -32,6 +34,7 @@ enum class DeliveryStatus {
     IN_TRANSIT,
     DROPPED_BY_COURIER,
     DELIVERED,
+    RETRIEVED,
 }
 
 @Entity
@@ -93,6 +96,9 @@ class PackageDelivery() {
 
     @Column(name = "courier_drop_photo_url", nullable = true, length = 500)
     var courierDropPhotoUrl: String? = null
+
+    @Column(name = "retrieved_at", nullable = true)
+    var retrievedAt: Instant? = null
 
     @CommandHandler
     constructor(command: CreatePackageDeliveryCommand) : this() {
@@ -241,5 +247,29 @@ class PackageDelivery() {
         this.courierDropLatitude = event.latitude
         this.courierDropLongitude = event.longitude
         this.courierDropPhotoUrl = event.photoUrl
+    }
+
+    @CommandHandler
+    fun handle(command: RetrievePackageCommand) {
+        require(status == DeliveryStatus.DROPPED_BY_COURIER) {
+            "Package must be DROPPED_BY_COURIER to be retrieved. Current status: $status"
+        }
+        require(retrievedAt == null) {
+            "Package has already been retrieved at $retrievedAt"
+        }
+
+        apply(
+            PackageRetrievedEvent(
+                deliveryId = deliveryId,
+                orderId = orderId,
+                retrievedAt = Instant.now(),
+            )
+        )
+    }
+
+    @EventSourcingHandler
+    fun on(event: PackageRetrievedEvent) {
+        this.status = DeliveryStatus.RETRIEVED
+        this.retrievedAt = event.retrievedAt
     }
 }

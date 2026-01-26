@@ -50,6 +50,7 @@ class PackageDeliveryQueryHandler(
                 courierDropLatitude = it.courierDropLatitude,
                 courierDropLongitude = it.courierDropLongitude,
                 courierDropPhotoUrl = it.courierDropPhotoUrl,
+                retrievedAt = it.retrievedAt,
             )
         }
     }
