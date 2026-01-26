@@ -2,10 +2,10 @@ package org.pv293.kotlinseminar.courierService.application.policies
 
 import org.axonframework.commandhandling.gateway.CommandGateway
 import org.axonframework.eventhandling.EventHandler
-import org.pv293.kotlinseminar.courierService.application.aggregates.CourierQueue
 import org.pv293.kotlinseminar.courierService.application.commands.impl.CreateDeliveryOfferCommand
+import org.pv293.kotlinseminar.courierService.application.projections.CourierQueueProjection
 import org.pv293.kotlinseminar.courierService.application.services.CourierNotificationService
-import org.pv293.kotlinseminar.courierService.repository.CourierQueueRepository
+import org.pv293.kotlinseminar.courierService.repository.CourierQueueProjectionRepository
 import org.pv293.kotlinseminar.productDeliveryService.events.impl.PackageDroppedByBakerEvent
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
@@ -24,7 +24,7 @@ import kotlin.math.sqrt
  */
 @Component
 class CourierNeededPolicy(
-    private val courierQueueRepository: CourierQueueRepository,
+    private val courierQueueProjectionRepository: CourierQueueProjectionRepository,
     private val commandGateway: CommandGateway,
     private val notificationService: CourierNotificationService,
 ) {
@@ -90,8 +90,8 @@ class CourierNeededPolicy(
         latitude: BigDecimal,
         longitude: BigDecimal,
         radiusKm: Double,
-    ): List<CourierQueue> {
-        val availableCouriers = courierQueueRepository.findByAvailableTrue()
+    ): List<CourierQueueProjection> {
+        val availableCouriers = courierQueueProjectionRepository.findByAvailableTrue()
 
         return availableCouriers.filter { courier ->
             val distance = calculateDistanceKm(

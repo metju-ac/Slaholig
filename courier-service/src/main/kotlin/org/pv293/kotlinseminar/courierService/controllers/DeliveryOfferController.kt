@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.axonframework.commandhandling.gateway.CommandGateway
+import org.axonframework.messaging.responsetypes.ResponseTypes
 import org.axonframework.queryhandling.QueryGateway
 import org.pv293.kotlinseminar.courierService.application.commands.impl.AcceptDeliveryOfferCommand
 import org.pv293.kotlinseminar.courierService.application.dto.AvailableDeliveryOfferDTO
@@ -53,11 +54,10 @@ class DeliveryOfferController(
 
         val offers = queryGateway.query(
             query,
-            List::class.java,
+            ResponseTypes.multipleInstancesOf(AvailableDeliveryOfferDTO::class.java),
         ).join()
 
-        @Suppress("UNCHECKED_CAST")
-        return ResponseEntity.ok(offers as List<AvailableDeliveryOfferDTO>)
+        return ResponseEntity.ok(offers)
     }
 
     @GetMapping("/{offerId}")
@@ -75,12 +75,10 @@ class DeliveryOfferController(
 
         val offers = queryGateway.query(
             AvailableDeliveryOffersQuery(),
-            List::class.java,
+            ResponseTypes.multipleInstancesOf(AvailableDeliveryOfferDTO::class.java),
         ).join()
 
-        @Suppress("UNCHECKED_CAST")
-        val offerList = offers as List<AvailableDeliveryOfferDTO>
-        val offer = offerList.find { it.offerId == offerUUID }
+        val offer = offers.find { it.offerId == offerUUID }
             ?: return ResponseEntity.notFound().build()
 
         return ResponseEntity.ok(offer)

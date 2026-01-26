@@ -3,7 +3,7 @@ package org.pv293.kotlinseminar.courierService.application.queries.handlers
 import org.axonframework.queryhandling.QueryHandler
 import org.pv293.kotlinseminar.courierService.application.dto.AvailableCourierDTO
 import org.pv293.kotlinseminar.courierService.application.queries.impl.AvailableCouriersQuery
-import org.pv293.kotlinseminar.courierService.repository.CourierQueueRepository
+import org.pv293.kotlinseminar.courierService.repository.CourierQueueProjectionRepository
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import java.math.BigDecimal
@@ -15,7 +15,7 @@ import kotlin.math.sqrt
 
 @Component
 class CourierQueueQueryHandler(
-    private val courierQueueRepository: CourierQueueRepository,
+    private val courierQueueProjectionRepository: CourierQueueProjectionRepository,
 ) {
     private val logger = LoggerFactory.getLogger(CourierQueueQueryHandler::class.java)
 
@@ -25,7 +25,7 @@ class CourierQueueQueryHandler(
             "Handling AvailableCouriersQuery: nearLat=${query.nearLatitude}, nearLon=${query.nearLongitude}, radiusKm=${query.radiusKm}"
         )
 
-        val availableCouriers = courierQueueRepository.findByAvailableTrue()
+        val availableCouriers = courierQueueProjectionRepository.findByAvailableTrue()
 
         val nearLat = query.nearLatitude
         val nearLon = query.nearLongitude

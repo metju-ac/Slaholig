@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.axonframework.commandhandling.gateway.CommandGateway
+import org.axonframework.messaging.responsetypes.ResponseTypes
 import org.axonframework.queryhandling.QueryGateway
 import org.pv293.kotlinseminar.courierService.application.commands.impl.MarkCourierAvailableCommand
 import org.pv293.kotlinseminar.courierService.application.commands.impl.MarkCourierUnavailableCommand
@@ -137,11 +138,10 @@ class CourierController(
 
         val couriers = queryGateway.query(
             AvailableCouriersQuery(),
-            List::class.java,
+            ResponseTypes.multipleInstancesOf(AvailableCourierDTO::class.java),
         ).join()
 
-        @Suppress("UNCHECKED_CAST")
-        return ResponseEntity.ok(couriers as List<AvailableCourierDTO>)
+        return ResponseEntity.ok(couriers)
     }
 
     @GetMapping("/available/nearby")
@@ -165,10 +165,9 @@ class CourierController(
                 nearLongitude = lon,
                 radiusKm = radiusKm,
             ),
-            List::class.java,
+            ResponseTypes.multipleInstancesOf(AvailableCourierDTO::class.java),
         ).join()
 
-        @Suppress("UNCHECKED_CAST")
-        return ResponseEntity.ok(couriers as List<AvailableCourierDTO>)
+        return ResponseEntity.ok(couriers)
     }
 }
