@@ -7,6 +7,8 @@ data class OrderCreatedFromCartEvent(
     val orderId: UUID,
     val cartId: UUID,
     val items: List<OrderItemDTO>,
+    val customerLatitude: BigDecimal?,
+    val customerLongitude: BigDecimal?,
 )
 
 data class OrderItemDTO(

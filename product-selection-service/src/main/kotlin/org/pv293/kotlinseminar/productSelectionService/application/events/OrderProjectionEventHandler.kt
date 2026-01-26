@@ -45,6 +45,8 @@ class OrderProjectionEventHandler(
             cartId = event.cartId,
             subtotal = subtotal,
             status = OrderStatus.CREATED,
+            customerLatitude = event.customerLatitude,
+            customerLongitude = event.customerLongitude,
         )
 
         // Set bidirectional relationship
