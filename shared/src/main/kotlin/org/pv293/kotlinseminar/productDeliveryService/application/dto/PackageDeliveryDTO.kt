@@ -24,4 +24,5 @@ data class PackageDeliveryDTO(
     val courierDropLatitude: BigDecimal? = null,
     val courierDropLongitude: BigDecimal? = null,
     val courierDropPhotoUrl: String? = null,
+    val retrievedAt: Instant? = null,
 )
