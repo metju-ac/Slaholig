@@ -14,9 +14,11 @@ import org.axonframework.spring.stereotype.Aggregate
 import org.pv293.kotlinseminar.productDeliveryService.application.commands.impl.AssignCourierCommand
 import org.pv293.kotlinseminar.productDeliveryService.application.commands.impl.CreatePackageDeliveryCommand
 import org.pv293.kotlinseminar.productDeliveryService.application.commands.impl.MarkDroppedByBakerCommand
+import org.pv293.kotlinseminar.productDeliveryService.application.commands.impl.MarkPickedUpByCourierCommand
 import org.pv293.kotlinseminar.productDeliveryService.events.impl.CourierAssignedEvent
 import org.pv293.kotlinseminar.productDeliveryService.events.impl.PackageDeliveryCreatedEvent
 import org.pv293.kotlinseminar.productDeliveryService.events.impl.PackageDroppedByBakerEvent
+import org.pv293.kotlinseminar.productDeliveryService.events.impl.PackagePickedUpByCourierEvent
 import java.math.BigDecimal
 import java.time.Instant
 import java.util.UUID
@@ -144,5 +146,29 @@ class PackageDelivery() {
         this.courierId = event.courierId
         this.offerId = event.offerId
         this.courierAssignedAt = event.assignedAt
+    }
+
+    @CommandHandler
+    fun handle(command: MarkPickedUpByCourierCommand) {
+        require(status == DeliveryStatus.DROPPED_BY_BAKER) {
+            "Package must be DROPPED_BY_BAKER to be picked up. Current status: $status"
+        }
+        require(courierId == command.courierId) {
+            "Package is assigned to courier $courierId, not ${command.courierId}"
+        }
+
+        apply(
+            PackagePickedUpByCourierEvent(
+                deliveryId = deliveryId,
+                courierId = command.courierId,
+                pickedUpAt = Instant.now(),
+            ),
+        )
+    }
+
+    @EventSourcingHandler
+    fun on(event: PackagePickedUpByCourierEvent) {
+        this.status = DeliveryStatus.IN_TRANSIT
+        this.pickedUpAt = event.pickedUpAt
     }
 }
