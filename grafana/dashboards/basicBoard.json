@@ -36,7 +36,7 @@
           "showLineNumbers": false,
           "showMiniMap": false
         },
-        "content": "# Spring Boot Microservices Dashboard\n**Services:** courses-service | enrollment-service | forum-service | assignment-service | product-selection-service | payment-service",
+        "content": "# Spring Boot Microservices Dashboard\n**Services:** product-selection-service | payment-service | product-delivery-service | courier-service",
         "mode": "markdown"
       },
       "pluginVersion": "10.0.0",
@@ -91,7 +91,7 @@
         "h": 4,
         "w": 8,
         "x": 0,
-        "y": 2
+        "y": 6
       },
       "id": 2,
       "options": {
@@ -100,315 +100,9 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "pluginVersion": "10.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus_main_uid"
-          },
-          "expr": "up{service=\"courses-service\"}",
-          "legendFormat": "courses-service",
-          "refId": "A"
-        }
-      ],
-      "title": "Courses Service",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus_main_uid"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [
-            {
-              "options": {
-                "0": {
-                  "color": "red",
-                  "index": 1,
-                  "text": "DOWN"
-                },
-                "1": {
-                  "color": "green",
-                  "index": 0,
-                  "text": "UP"
-                }
-              },
-              "type": "value"
-            }
+          "calcs": [
+            "lastNotNull"
           ],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "red",
-                "value": null
-              },
-              {
-                "color": "green",
-                "value": 1
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 8,
-        "x": 8,
-        "y": 2
-      },
-      "id": 3,
-      "options": {
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": ["lastNotNull"],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "pluginVersion": "10.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus_main_uid"
-          },
-          "expr": "up{service=\"enrollment-service\"}",
-          "legendFormat": "enrollment-service",
-          "refId": "A"
-        }
-      ],
-      "title": "Enrollment Service",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus_main_uid"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [
-            {
-              "options": {
-                "0": {
-                  "color": "red",
-                  "index": 1,
-                  "text": "DOWN"
-                },
-                "1": {
-                  "color": "green",
-                  "index": 0,
-                  "text": "UP"
-                }
-              },
-              "type": "value"
-            }
-          ],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "red",
-                "value": null
-              },
-              {
-                "color": "green",
-                "value": 1
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 8,
-        "x": 16,
-        "y": 2
-      },
-      "id": 4,
-      "options": {
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": ["lastNotNull"],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "pluginVersion": "10.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus_main_uid"
-          },
-          "expr": "up{service=\"forum-service\"}",
-          "legendFormat": "forum-service",
-          "refId": "A"
-        }
-      ],
-      "title": "Forum Service",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus_main_uid"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [
-            {
-              "options": {
-                "0": {
-                  "color": "red",
-                  "index": 1,
-                  "text": "DOWN"
-                },
-                "1": {
-                  "color": "green",
-                  "index": 0,
-                  "text": "UP"
-                }
-              },
-              "type": "value"
-            }
-          ],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "red",
-                "value": null
-              },
-              {
-                "color": "green",
-                "value": 1
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 8,
-        "x": 16,
-        "y": 2
-      },
-      "id": 4,
-      "options": {
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": ["lastNotNull"],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "pluginVersion": "10.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus_main_uid"
-          },
-          "expr": "up{service=\"assignment-service\"}",
-          "legendFormat": "assignment-service",
-          "refId": "A"
-        }
-      ],
-      "title": "Assignment Service",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus_main_uid"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [
-            {
-              "options": {
-                "0": {
-                  "color": "red",
-                  "index": 1,
-                  "text": "DOWN"
-                },
-                "1": {
-                  "color": "green",
-                  "index": 0,
-                  "text": "UP"
-                }
-              },
-              "type": "value"
-            }
-          ],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "red",
-                "value": null
-              },
-              {
-                "color": "green",
-                "value": 1
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 8,
-        "x": 0,
-        "y": 6
-      },
-      "id": 5,
-      "options": {
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": ["lastNotNull"],
           "fields": "",
           "values": false
         },
@@ -478,14 +172,16 @@
         "x": 8,
         "y": 6
       },
-      "id": 17,
+      "id": 3,
       "options": {
         "colorMode": "background",
         "graphMode": "none",
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -504,6 +200,164 @@
         }
       ],
       "title": "Payment Service",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus_main_uid"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "red",
+                  "index": 1,
+                  "text": "DOWN"
+                },
+                "1": {
+                  "color": "green",
+                  "index": 0,
+                  "text": "UP"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 16,
+        "y": 6
+      },
+      "id": 4,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus_main_uid"
+          },
+          "expr": "up{service=\"product-delivery-service\"}",
+          "legendFormat": "product-delivery-service",
+          "refId": "A"
+        }
+      ],
+      "title": "Product Delivery Service",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus_main_uid"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "red",
+                  "index": 1,
+                  "text": "DOWN"
+                },
+                "1": {
+                  "color": "green",
+                  "index": 0,
+                  "text": "UP"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 0,
+        "y": 10
+      },
+      "id": 5,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus_main_uid"
+          },
+          "expr": "up{service=\"courier-service\"}",
+          "legendFormat": "courier-service",
+          "refId": "A"
+        }
+      ],
+      "title": "Courier Service",
       "type": "stat"
     },
     {
@@ -569,7 +423,10 @@
       "id": 6,
       "options": {
         "legend": {
-          "calcs": ["mean", "max"],
+          "calcs": [
+            "mean",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
@@ -586,45 +443,9 @@
             "type": "prometheus",
             "uid": "prometheus_main_uid"
           },
-          "expr": "rate(http_server_requests_seconds_count{service=\"courses-service\"}[1m])",
-          "legendFormat": "courses-service",
-          "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus_main_uid"
-          },
-          "expr": "rate(http_server_requests_seconds_count{service=\"enrollment-service\"}[1m])",
-          "legendFormat": "enrollment-service",
-          "refId": "B"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus_main_uid"
-          },
-          "expr": "rate(http_server_requests_seconds_count{service=\"forum-service\"}[1m])",
-          "legendFormat": "forum-service",
-          "refId": "C"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus_main_uid"
-          },
-          "expr": "rate(http_server_requests_seconds_count{service=\"assignment-service\"}[1m])",
-          "legendFormat": "assignment-service",
-          "refId": "D"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus_main_uid"
-          },
           "expr": "rate(http_server_requests_seconds_count{service=\"product-selection-service\"}[1m])",
           "legendFormat": "product-selection-service",
-          "refId": "E"
+          "refId": "A"
         },
         {
           "datasource": {
@@ -633,7 +454,25 @@
           },
           "expr": "rate(http_server_requests_seconds_count{service=\"payment-service\"}[1m])",
           "legendFormat": "payment-service",
-          "refId": "F"
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus_main_uid"
+          },
+          "expr": "rate(http_server_requests_seconds_count{service=\"product-delivery-service\"}[1m])",
+          "legendFormat": "product-delivery-service",
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus_main_uid"
+          },
+          "expr": "rate(http_server_requests_seconds_count{service=\"courier-service\"}[1m])",
+          "legendFormat": "courier-service",
+          "refId": "D"
         }
       ],
       "title": "HTTP Request Rate",
@@ -702,7 +541,10 @@
       "id": 7,
       "options": {
         "legend": {
-          "calcs": ["mean", "max"],
+          "calcs": [
+            "mean",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
@@ -719,45 +561,9 @@
             "type": "prometheus",
             "uid": "prometheus_main_uid"
           },
-          "expr": "rate(http_server_requests_seconds_sum{service=\"courses-service\"}[1m]) / rate(http_server_requests_seconds_count{service=\"courses-service\"}[1m])",
-          "legendFormat": "courses-service",
-          "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus_main_uid"
-          },
-          "expr": "rate(http_server_requests_seconds_sum{service=\"enrollment-service\"}[1m]) / rate(http_server_requests_seconds_count{service=\"enrollment-service\"}[1m])",
-          "legendFormat": "enrollment-service",
-          "refId": "B"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus_main_uid"
-          },
-          "expr": "rate(http_server_requests_seconds_sum{service=\"forum-service\"}[1m]) / rate(http_server_requests_seconds_count{service=\"forum-service\"}[1m])",
-          "legendFormat": "forum-service",
-          "refId": "C"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus_main_uid"
-          },
-          "expr": "rate(http_server_requests_seconds_sum{service=\"assignment-service\"}[1m]) / rate(http_server_requests_seconds_count{service=\"assignment-service\"}[1m])",
-          "legendFormat": "assignment-service",
-          "refId": "D"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus_main_uid"
-          },
           "expr": "rate(http_server_requests_seconds_sum{service=\"product-selection-service\"}[1m]) / rate(http_server_requests_seconds_count{service=\"product-selection-service\"}[1m])",
           "legendFormat": "product-selection-service",
-          "refId": "E"
+          "refId": "A"
         },
         {
           "datasource": {
@@ -766,7 +572,25 @@
           },
           "expr": "rate(http_server_requests_seconds_sum{service=\"payment-service\"}[1m]) / rate(http_server_requests_seconds_count{service=\"payment-service\"}[1m])",
           "legendFormat": "payment-service",
-          "refId": "F"
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus_main_uid"
+          },
+          "expr": "rate(http_server_requests_seconds_sum{service=\"product-delivery-service\"}[1m]) / rate(http_server_requests_seconds_count{service=\"product-delivery-service\"}[1m])",
+          "legendFormat": "product-delivery-service",
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus_main_uid"
+          },
+          "expr": "rate(http_server_requests_seconds_sum{service=\"courier-service\"}[1m]) / rate(http_server_requests_seconds_count{service=\"courier-service\"}[1m])",
+          "legendFormat": "courier-service",
+          "refId": "D"
         }
       ],
       "title": "HTTP Response Time (Avg)",
@@ -835,7 +659,10 @@
       "id": 8,
       "options": {
         "legend": {
-          "calcs": ["mean", "max"],
+          "calcs": [
+            "mean",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
@@ -852,45 +679,9 @@
             "type": "prometheus",
             "uid": "prometheus_main_uid"
           },
-          "expr": "jvm_memory_used_bytes{service=\"courses-service\", area=\"heap\"}",
-          "legendFormat": "courses-service ({{id}})",
-          "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus_main_uid"
-          },
-          "expr": "jvm_memory_used_bytes{service=\"enrollment-service\", area=\"heap\"}",
-          "legendFormat": "enrollment-service ({{id}})",
-          "refId": "B"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus_main_uid"
-          },
-          "expr": "jvm_memory_used_bytes{service=\"forum-service\", area=\"heap\"}",
-          "legendFormat": "forum-service ({{id}})",
-          "refId": "C"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus_main_uid"
-          },
-          "expr": "jvm_memory_used_bytes{service=\"assignment-service\", area=\"heap\"}",
-          "legendFormat": "assignment-service ({{id}})",
-          "refId": "D"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus_main_uid"
-          },
           "expr": "jvm_memory_used_bytes{service=\"product-selection-service\", area=\"heap\"}",
           "legendFormat": "product-selection-service ({{id}})",
-          "refId": "E"
+          "refId": "A"
         },
         {
           "datasource": {
@@ -899,7 +690,25 @@
           },
           "expr": "jvm_memory_used_bytes{service=\"payment-service\", area=\"heap\"}",
           "legendFormat": "payment-service ({{id}})",
-          "refId": "F"
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus_main_uid"
+          },
+          "expr": "jvm_memory_used_bytes{service=\"product-delivery-service\", area=\"heap\"}",
+          "legendFormat": "product-delivery-service ({{id}})",
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus_main_uid"
+          },
+          "expr": "jvm_memory_used_bytes{service=\"courier-service\", area=\"heap\"}",
+          "legendFormat": "courier-service ({{id}})",
+          "refId": "D"
         }
       ],
       "title": "JVM Heap Memory Used",
@@ -968,7 +777,10 @@
       "id": 9,
       "options": {
         "legend": {
-          "calcs": ["mean", "max"],
+          "calcs": [
+            "mean",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
@@ -985,45 +797,9 @@
             "type": "prometheus",
             "uid": "prometheus_main_uid"
           },
-          "expr": "jvm_threads_live_threads{service=\"courses-service\"}",
-          "legendFormat": "courses-service",
-          "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus_main_uid"
-          },
-          "expr": "jvm_threads_live_threads{service=\"enrollment-service\"}",
-          "legendFormat": "enrollment-service",
-          "refId": "B"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus_main_uid"
-          },
-          "expr": "jvm_threads_live_threads{service=\"forum-service\"}",
-          "legendFormat": "forum-service",
-          "refId": "C"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus_main_uid"
-          },
-          "expr": "jvm_threads_live_threads{service=\"assignment-service\"}",
-          "legendFormat": "assignment-service",
-          "refId": "D"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus_main_uid"
-          },
           "expr": "jvm_threads_live_threads{service=\"product-selection-service\"}",
           "legendFormat": "product-selection-service",
-          "refId": "E"
+          "refId": "A"
         },
         {
           "datasource": {
@@ -1032,7 +808,25 @@
           },
           "expr": "jvm_threads_live_threads{service=\"payment-service\"}",
           "legendFormat": "payment-service",
-          "refId": "F"
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus_main_uid"
+          },
+          "expr": "jvm_threads_live_threads{service=\"product-delivery-service\"}",
+          "legendFormat": "product-delivery-service",
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus_main_uid"
+          },
+          "expr": "jvm_threads_live_threads{service=\"courier-service\"}",
+          "legendFormat": "courier-service",
+          "refId": "D"
         }
       ],
       "title": "JVM Live Threads",
@@ -1101,7 +895,10 @@
       "id": 10,
       "options": {
         "legend": {
-          "calcs": ["mean", "max"],
+          "calcs": [
+            "mean",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
@@ -1118,45 +915,9 @@
             "type": "prometheus",
             "uid": "prometheus_main_uid"
           },
-          "expr": "system_cpu_usage{service=\"courses-service\"}",
-          "legendFormat": "courses-service",
-          "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus_main_uid"
-          },
-          "expr": "system_cpu_usage{service=\"enrollment-service\"}",
-          "legendFormat": "enrollment-service",
-          "refId": "B"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus_main_uid"
-          },
-          "expr": "system_cpu_usage{service=\"forum-service\"}",
-          "legendFormat": "forum-service",
-          "refId": "C"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus_main_uid"
-          },
-          "expr": "system_cpu_usage{service=\"assignment-service\"}",
-          "legendFormat": "assignment-service",
-          "refId": "D"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus_main_uid"
-          },
           "expr": "system_cpu_usage{service=\"product-selection-service\"}",
           "legendFormat": "product-selection-service",
-          "refId": "E"
+          "refId": "A"
         },
         {
           "datasource": {
@@ -1165,7 +926,25 @@
           },
           "expr": "system_cpu_usage{service=\"payment-service\"}",
           "legendFormat": "payment-service",
-          "refId": "F"
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus_main_uid"
+          },
+          "expr": "system_cpu_usage{service=\"product-delivery-service\"}",
+          "legendFormat": "product-delivery-service",
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus_main_uid"
+          },
+          "expr": "system_cpu_usage{service=\"courier-service\"}",
+          "legendFormat": "courier-service",
+          "refId": "D"
         }
       ],
       "title": "System CPU Usage",
@@ -1234,7 +1013,10 @@
       "id": 11,
       "options": {
         "legend": {
-          "calcs": ["mean", "max"],
+          "calcs": [
+            "mean",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
@@ -1251,45 +1033,9 @@
             "type": "prometheus",
             "uid": "prometheus_main_uid"
           },
-          "expr": "rate(jvm_gc_pause_seconds_count{service=\"courses-service\"}[1m])",
-          "legendFormat": "courses-service ({{action}})",
-          "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus_main_uid"
-          },
-          "expr": "rate(jvm_gc_pause_seconds_count{service=\"enrollment-service\"}[1m])",
-          "legendFormat": "enrollment-service ({{action}})",
-          "refId": "B"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus_main_uid"
-          },
-          "expr": "rate(jvm_gc_pause_seconds_count{service=\"forum-service\"}[1m])",
-          "legendFormat": "forum-service ({{action}})",
-          "refId": "C"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus_main_uid"
-          },
-          "expr": "rate(jvm_gc_pause_seconds_count{service=\"assignment-service\"}[1m])",
-          "legendFormat": "assignment-service ({{action}})",
-          "refId": "D"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus_main_uid"
-          },
           "expr": "rate(jvm_gc_pause_seconds_count{service=\"product-selection-service\"}[1m])",
           "legendFormat": "product-selection-service ({{action}})",
-          "refId": "E"
+          "refId": "A"
         },
         {
           "datasource": {
@@ -1298,7 +1044,25 @@
           },
           "expr": "rate(jvm_gc_pause_seconds_count{service=\"payment-service\"}[1m])",
           "legendFormat": "payment-service ({{action}})",
-          "refId": "F"
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus_main_uid"
+          },
+          "expr": "rate(jvm_gc_pause_seconds_count{service=\"product-delivery-service\"}[1m])",
+          "legendFormat": "product-delivery-service ({{action}})",
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus_main_uid"
+          },
+          "expr": "rate(jvm_gc_pause_seconds_count{service=\"courier-service\"}[1m])",
+          "legendFormat": "courier-service ({{action}})",
+          "refId": "D"
         }
       ],
       "title": "GC Pause Rate",
@@ -1339,8 +1103,8 @@
       "gridPos": {
         "h": 6,
         "w": 8,
-        "x": 0,
-        "y": 34
+        "x": 8,
+        "y": 40
       },
       "id": 12,
       "options": {
@@ -1349,271 +1113,9 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "pluginVersion": "10.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus_main_uid"
-          },
-          "expr": "sum(rate(http_server_requests_seconds_count{service=\"courses-service\", status=~\"5..\"}[5m])) or vector(0)",
-          "legendFormat": "5xx Errors",
-          "refId": "A"
-        }
-      ],
-      "title": "Courses Service - 5xx Errors",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus_main_uid"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 50
-              },
-              {
-                "color": "red",
-                "value": 100
-              }
-            ]
-          },
-          "unit": "short"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 6,
-        "w": 8,
-        "x": 8,
-        "y": 34
-      },
-      "id": 13,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": ["lastNotNull"],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "pluginVersion": "10.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus_main_uid"
-          },
-          "expr": "sum(rate(http_server_requests_seconds_count{service=\"enrollment-service\", status=~\"5..\"}[5m])) or vector(0)",
-          "legendFormat": "5xx Errors",
-          "refId": "A"
-        }
-      ],
-      "title": "Enrollment Service - 5xx Errors",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus_main_uid"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 50
-              },
-              {
-                "color": "red",
-                "value": 100
-              }
-            ]
-          },
-          "unit": "short"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 6,
-        "w": 8,
-        "x": 16,
-        "y": 34
-      },
-      "id": 14,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": ["lastNotNull"],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "pluginVersion": "10.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus_main_uid"
-          },
-          "expr": "sum(rate(http_server_requests_seconds_count{service=\"forum-service\", status=~\"5..\"}[5m])) or vector(0)",
-          "legendFormat": "5xx Errors",
-          "refId": "A"
-        }
-      ],
-      "title": "Forum Service - 5xx Errors",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus_main_uid"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 50
-              },
-              {
-                "color": "red",
-                "value": 100
-              }
-            ]
-          },
-          "unit": "short"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 6,
-        "w": 8,
-        "x": 0,
-        "y": 40
-      },
-      "id": 15,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": ["lastNotNull"],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "pluginVersion": "10.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus_main_uid"
-          },
-          "expr": "sum(rate(http_server_requests_seconds_count{service=\"assignment-service\", status=~\"5..\"}[5m])) or vector(0)",
-          "legendFormat": "5xx Errors",
-          "refId": "A"
-        }
-      ],
-      "title": "Assignment Service - 5xx Errors",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus_main_uid"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 50
-              },
-              {
-                "color": "red",
-                "value": 100
-              }
-            ]
-          },
-          "unit": "short"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 6,
-        "w": 8,
-        "x": 8,
-        "y": 40
-      },
-      "id": 16,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -1672,14 +1174,16 @@
         "x": 16,
         "y": 40
       },
-      "id": 18,
+      "id": 13,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -1699,12 +1203,152 @@
       ],
       "title": "Payment Service - 5xx Errors",
       "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus_main_uid"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 50
+              },
+              {
+                "color": "red",
+                "value": 100
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 0,
+        "y": 46
+      },
+      "id": 14,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus_main_uid"
+          },
+          "expr": "sum(rate(http_server_requests_seconds_count{service=\"product-delivery-service\", status=~\"5..\"}[5m])) or vector(0)",
+          "legendFormat": "5xx Errors",
+          "refId": "A"
+        }
+      ],
+      "title": "Product Delivery Service - 5xx Errors",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus_main_uid"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 50
+              },
+              {
+                "color": "red",
+                "value": 100
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 8,
+        "y": 46
+      },
+      "id": 15,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus_main_uid"
+          },
+          "expr": "sum(rate(http_server_requests_seconds_count{service=\"courier-service\", status=~\"5..\"}[5m])) or vector(0)",
+          "legendFormat": "5xx Errors",
+          "refId": "A"
+        }
+      ],
+      "title": "Courier Service - 5xx Errors",
+      "type": "stat"
     }
   ],
   "refresh": "5s",
   "schemaVersion": 38,
   "style": "dark",
-  "tags": ["spring-boot", "microservices", "kotlin"],
+  "tags": [
+    "spring-boot",
+    "microservices",
+    "kotlin"
+  ],
   "templating": {
     "list": []
   },

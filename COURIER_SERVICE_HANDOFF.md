@@ -1,168 +1,250 @@
 # Courier Service Implementation - Developer Handoff Document
 
-> **IMPORTANT**: This is a temporary handoff document. Once the courier-service has been implemented and the product-delivery-service updates are complete, **DELETE THIS FILE**. It is meant only for implementation guidance and should not remain in the repository long-term.
+> **IMPORTANT**: This is a temporary handoff document. Once the remaining features are implemented and the product-delivery-service updates are complete, **DELETE THIS FILE**. It is meant only for implementation guidance and should not remain in the repository long-term.
 
 ## Overview
 
-This document provides guidance for implementing a new **`courier-service`** microservice and updating the existing **`product-delivery-service`** to support the courier workflow for package delivery.
+This document tracks the implementation status of the **`courier-service`** microservice and its integration with the **`product-delivery-service`** for package delivery workflow.
 
-## Current State: What Has Been Implemented
+## Implementation Status Summary
 
-### product-delivery-service (Existing)
+| Feature | Status |
+|---------|--------|
+| courier-service module setup | DONE |
+| Docker/Prometheus/Grafana integration | DONE |
+| Courier availability tracking | DONE |
+| Delivery offer creation & notifications | DONE |
+| Offer acceptance flow | DONE |
+| product-delivery-service integration | DONE |
+| Courier pickup (IN_TRANSIT) | TODO |
+| Courier drop-off (DROPPED_BY_COURIER) | TODO |
+| Delivery confirmation (DELIVERED) | TODO |
+| Proximity-based full location access | TODO |
 
-The `product-delivery-service` currently handles:
+---
 
-1. **Package Delivery Aggregate** (`PackageDelivery`)
-   - Tracks delivery lifecycle with states: `CREATED`, `DROPPED_BY_BAKER`, `IN_TRANSIT`, `DROPPED_BY_COURIER`, `DELIVERED`
-   - Location: `product-delivery-service/src/main/kotlin/org/pv293/kotlinseminar/productDeliveryService/application/aggregates/PackageDelivery.kt:22-28`
-   - Stores package metadata: deliveryId, orderId, transactionId, location coordinates, photo URL
-   - Currently handles: package creation and baker drop-off
+## What Has Been Implemented
 
-2. **DeliveryLocation Read Model**
-   - Full location information including exact coordinates and photo URL
-   - Location: `product-delivery-service/src/main/kotlin/org/pv293/kotlinseminar/productDeliveryService/application/aggregates/DeliveryLocation.kt:13-31`
-   - Contains: latitude, longitude, photoUrl, droppedAt timestamp
+### 1. courier-service Module (Port 8087)
 
-3. **Event Handlers**
-   - `PaymentMarkedPaidEventHandler`: Creates package delivery when payment is confirmed
-   - `PackageDroppedByBakerEventHandler`: Updates location read model when baker drops package
-   - Location: `product-delivery-service/src/main/kotlin/org/pv293/kotlinseminar/productDeliveryService/events/handlers/`
+**Directory Structure:**
+```
+courier-service/
+├── src/main/kotlin/org/pv293/kotlinseminar/courierService/
+│   ├── CourierServiceApplication.kt
+│   ├── application/
+│   │   ├── aggregates/
+│   │   │   ├── AnonymizedPackageLocationInfo.kt    # Read model (approx location)
+│   │   │   ├── AvailableDeliveryOffer.kt           # Aggregate for offer acceptance
+│   │   │   ├── CourierQueue.kt                     # Aggregate for courier availability
+│   │   │   ├── OfferStatus.kt                      # PENDING, ACCEPTED
+│   │   │   └── PackageLocationInfo.kt              # Read model (full location)
+│   │   ├── commands/impl/
+│   │   │   ├── AcceptDeliveryOfferCommand.kt
+│   │   │   ├── CreateDeliveryOfferCommand.kt
+│   │   │   ├── MarkCourierAvailableCommand.kt
+│   │   │   ├── MarkCourierUnavailableCommand.kt
+│   │   │   └── UpdateCourierLocationCommand.kt
+│   │   ├── policies/
+│   │   │   └── CourierNeededPolicy.kt              # Finds nearby couriers, creates offers
+│   │   ├── queries/handlers/
+│   │   │   ├── CourierQueueQueryHandler.kt
+│   │   │   └── DeliveryOfferQueryHandler.kt
+│   │   └── services/
+│   │       └── CourierNotificationService.kt       # Mock email notifications
+│   ├── controllers/
+│   │   ├── CourierController.kt                    # Courier availability endpoints
+│   │   └── DeliveryOfferController.kt              # Delivery offer endpoints
+│   ├── events/
+│   │   ├── handlers/
+│   │   │   └── PackageDroppedByBakerEventHandler.kt
+│   │   └── impl/
+│   │       └── DeliveryOfferCreatedEvent.kt        # Internal event
+│   ├── infrastructure/
+│   │   └── AxonConfig.kt
+│   └── repository/
+│       ├── AnonymizedPackageLocationInfoRepository.kt
+│       ├── AvailableDeliveryOfferRepository.kt
+│       ├── CourierQueueRepository.kt
+│       └── PackageLocationInfoRepository.kt
+├── src/main/resources/
+│   ├── application-prod.yml
+│   ├── application-dev.yml
+│   └── logback-spring.xml
+├── build.gradle.kts
+└── Dockerfile
+```
 
-4. **Events Published** (in `shared` module)
-   - `PackageDeliveryCreatedEvent`: When delivery record is created
-   - `PackageDroppedByBakerEvent`: When baker drops package at dead drop location
-     - Contains: deliveryId, orderId, droppedAt, latitude, longitude, photoUrl
-   - Location: `shared/src/main/kotlin/org/pv293/kotlinseminar/productDeliveryService/events/impl/`
+### 2. Shared Module Additions
 
-5. **REST Endpoints**
-   - `GET /deliveries/{deliveryId}` - Get delivery info
-   - `GET /deliveries/order/{orderId}` - Get delivery by order
-   - `PUT /deliveries/{deliveryId}/drop-by-baker` - Baker marks package dropped
-   - `GET /deliveries/{deliveryId}/location` - Get full location details
-   - Port: 8086 (via docker-compose)
+```
+shared/src/main/kotlin/org/pv293/kotlinseminar/courierService/
+├── application/
+│   ├── dto/
+│   │   ├── AvailableCourierDTO.kt
+│   │   └── AvailableDeliveryOfferDTO.kt
+│   └── queries/impl/
+│       ├── AvailableCouriersQuery.kt
+│       └── AvailableDeliveryOffersQuery.kt
+└── events/impl/
+    ├── CourierLocationUpdatedEvent.kt
+    ├── CourierMarkedAvailableEvent.kt
+    ├── CourierMarkedUnavailableEvent.kt
+    └── DeliveryOfferAcceptedEvent.kt           # Cross-service event
+```
 
-### Shared Module (Existing)
+### 3. product-delivery-service Integration
 
-Contains cross-service contracts:
-- DTOs: `PackageDeliveryDTO`, `DeliveryLocationDTO`
-- Events: `PackageDroppedByBakerEvent`, `PackageDeliveryCreatedEvent`
-- Queries: `PackageDeliveryQuery`, `DeliveryLocationQuery`
+New event handler:
+- `DeliveryOfferAcceptedEventHandler.kt` - Logs when courier accepts a delivery offer
 
-## What Needs To Be Implemented
+---
 
-### 1. New courier-service Module
+## Implemented Features
 
-Create a new microservice by copying the structure from existing services (e.g., `product-delivery-service` or `payment-service`).
+### Courier Availability Tracking
 
-#### Module Setup
+Couriers can mark themselves as available/unavailable and update their location.
 
-1. **Directory Structure**: Copy from any existing service
-   ```
-   courier-service/
-   ├── src/main/kotlin/org/pv293/kotlinseminar/courierService/
-   │   ├── CourierServiceApplication.kt
-   │   ├── application/
-   │   │   ├── aggregates/          # Courier aggregate
-   │   │   ├── commands/impl/       # AcceptDeliveryOfferCommand, etc.
-   │   │   ├── queries/handlers/    # Query handlers
-   │   │   └── services/            # Business logic
-   │   ├── controllers/             # REST endpoints
-   │   ├── events/handlers/         # Event handlers (for PackageDroppedByBakerEvent)
-   │   ├── infrastructure/          # AxonConfig
-   │   └── repository/              # JPA repositories
-   ├── src/main/resources/
-   │   ├── application-prod.yml     # Postgres connection, Axon config
-   │   ├── application-dev.yml      # H2/local config
-   │   └── logback-spring.xml       # Loki logging
-   ├── build.gradle.kts             # Same deps as other services
-   └── Dockerfile                   # Multi-stage build
-   ```
+**Aggregate:** `CourierQueue`
+- States: available (true/false)
+- Tracks: courierId, latitude, longitude, lastUpdatedAt
 
-2. **Gradle Configuration**
-   - Add `include("courier-service")` to `settings.gradle.kts:10`
-   - Copy `build.gradle.kts` from `product-delivery-service` or `payment-service`
-   - Update `mainClass` in BootJar task to: `org.pv293.kotlinseminar.courierService.CourierServiceApplicationKt`
+**REST Endpoints:**
 
-3. **Docker Compose Configuration**
-   - Add Postgres container `postgres-courier` on port `5439`
-   - Add service definition (port `8087` recommended)
-   - Update `prometheus.yml` with courier-service scrape config
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| PUT | `/couriers/{courierId}/available` | Mark courier available (body: lat, lon) |
+| PUT | `/couriers/{courierId}/unavailable` | Mark courier unavailable |
+| PUT | `/couriers/{courierId}/location` | Update location while available |
+| GET | `/couriers/available` | List all available couriers |
+| GET | `/couriers/available/nearby?lat=X&lon=Y&radiusKm=Z` | List nearby couriers |
 
-#### Core Functionality: PackageDroppedByBakerEvent Handler
+### CourierNeeded Policy
 
-The courier service must listen for `PackageDroppedByBakerEvent` from product-delivery-service.
+When a baker drops a package (`PackageDroppedByBakerEvent`), the `CourierNeededPolicy`:
+1. Finds all available couriers within **5km** of the drop location
+2. Creates an `AvailableDeliveryOffer` for each courier
+3. Sends a mock email notification to each courier
 
-**Key Responsibilities:**
-- Create read models for available delivery offers
-- Store **anonymized location info** (approximate coordinates, NO photo)
-- Make offers visible to couriers
-- Track which couriers have accepted which deliveries
+**Key Configuration:**
+- Radius: 5km (hardcoded in `CourierNeededPolicy.NEARBY_RADIUS_KM`)
+- All nearby couriers are notified simultaneously
+- First courier to accept gets the delivery
 
-**Implementation Pattern:**
+### Delivery Offer Flow
+
+**Aggregate:** `AvailableDeliveryOffer`
+- States: `PENDING`, `ACCEPTED`
+- Tracks: offerId, deliveryId, orderId, courierId, approximate location, timestamps
+
+**REST Endpoints:**
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/delivery-offers` | List offers (filter: courierId, status) |
+| GET | `/delivery-offers/{offerId}` | Get specific offer |
+| POST | `/delivery-offers/{offerId}/accept` | Accept offer (body: courierId) |
+
+### Location Anonymization
+
+When a package is dropped by baker, two read models are created:
+1. **AnonymizedPackageLocationInfo** - Coordinates rounded to 2 decimal places (~100m precision), NO photo URL
+2. **PackageLocationInfo** - Full coordinates and photo URL (for later access)
+
+---
+
+## Event Flow (Current State)
+
+```
+1. Payment confirmed
+   -> PaymentMarkedPaidEvent
+   -> product-delivery-service creates PackageDelivery (status: CREATED)
+
+2. Baker drops package
+   -> MarkDroppedByBakerCommand
+   -> PackageDroppedByBakerEvent (status: DROPPED_BY_BAKER)
+   
+3. [IMPLEMENTED] courier-service handles PackageDroppedByBakerEvent
+   -> PackageDroppedByBakerEventHandler creates read models
+   -> CourierNeededPolicy finds nearby couriers
+   -> Creates AvailableDeliveryOffer for each courier
+   -> Sends mock email notifications
+
+4. [IMPLEMENTED] Courier views and accepts offer
+   -> GET /delivery-offers?courierId=...&status=PENDING
+   -> POST /delivery-offers/{offerId}/accept
+   -> DeliveryOfferAcceptedEvent
+
+5. [IMPLEMENTED] product-delivery-service logs acceptance
+   -> DeliveryOfferAcceptedEventHandler logs courier assignment
+
+6. [TODO] Courier gets full location (proximity check required)
+
+7. [TODO] Courier picks up package
+   -> MarkPickedUpByCourierCommand -> PackagePickedUpByCourierEvent
+   -> Status: IN_TRANSIT
+
+8. [TODO] Courier drops at destination
+   -> MarkDroppedByCourierCommand -> PackageDroppedByCourierEvent
+   -> Status: DROPPED_BY_COURIER
+
+9. [TODO] Recipient confirms delivery
+   -> MarkDeliveredCommand -> PackageDeliveredEvent
+   -> Status: DELIVERED
+```
+
+---
+
+## What Still Needs To Be Implemented
+
+### 1. Proximity-Based Full Location Access
+
+**Purpose:** Courier should only see exact location + photo when nearby.
+
+**Implementation:**
 ```kotlin
-@Component
-class PackageDroppedByBakerEventHandler(
-    // Inject repositories for read models
-) {
-    @EventHandler
-    fun on(event: PackageDroppedByBakerEvent) {
-        // 1. Create AnonymizedPackageLocationInfo read model
-        //    - Approximate/fuzzy coordinates (reduce precision)
-        //    - NO photoUrl field
-        //    - Mark as available for courier acceptance
-        
-        // 2. Store full location reference (deliveryId, orderId)
-        //    but don't expose coordinates/photo yet
-        
-        // 3. Log that new delivery offer is available
-    }
+// courier-service/.../controllers/DeliveryOfferController.kt
+
+@GetMapping("/{offerId}/location")
+fun getFullLocation(
+    @PathVariable offerId: String,
+    @RequestParam courierId: String,
+    @RequestParam lat: BigDecimal,
+    @RequestParam lon: BigDecimal,
+): ResponseEntity<PackageLocationInfoDTO> {
+    // 1. Verify offer is ACCEPTED by this courier
+    // 2. Check courier location is within X meters of package
+    // 3. Return full location with photo URL, or 403
 }
 ```
 
-#### Read Models Required
+**Decision needed:** Proximity threshold (suggestion: 500m-1km)
 
-1. **AnonymizedPackageLocationInfo** (JPA Entity)
-   - Fields: deliveryId, orderId, approximateLatitude, approximateLongitude, droppedAt
-   - Purpose: Show couriers general area without exact location or photo
-   - Precision: Round coordinates to ~100m accuracy (e.g., 2-3 decimal places instead of 7)
+### 2. Courier Pickup Command
 
-2. **PackageLocationInfo** (JPA Entity)
-   - Fields: deliveryId, orderId, latitude, longitude, photoUrl, droppedAt
-   - Purpose: Full location details for accepted couriers who are nearby
-   - Initially populated but NOT exposed to couriers until conditions met
-
-3. **CourierDeliveryAcceptance** (Aggregate or Entity)
-   - Track which courier accepted which delivery
-   - Fields: acceptanceId, courierId, deliveryId, acceptedAt, courierLatitude, courierLongitude
-   - State management for delivery lifecycle from courier perspective
-
-### 2. Updates to product-delivery-service
-
-The existing service needs to be extended to handle courier interactions.
-
-#### New Commands
-
-1. **MarkPickedUpByCourierCommand**
-   - deliveryId, courierId, pickedUpAt
-   - Transitions: `DROPPED_BY_BAKER` → `IN_TRANSIT`
-
-2. **MarkDroppedByCourierCommand**
-   - deliveryId, courierId, latitude, longitude, photoUrl, droppedAt
-   - Transitions: `IN_TRANSIT` → `DROPPED_BY_COURIER`
-
-3. **MarkDeliveredCommand**
-   - deliveryId, recipientId, deliveredAt
-   - Transitions: `DROPPED_BY_COURIER` → `DELIVERED`
-
-#### Aggregate Updates
-
-Update `PackageDelivery.kt:82-108` aggregate to add command handlers:
+**In product-delivery-service:**
 
 ```kotlin
+// Commands
+data class MarkPickedUpByCourierCommand(
+    @TargetAggregateIdentifier
+    val deliveryId: UUID,
+    val courierId: UUID,
+)
+
+// Events (in shared module)
+data class PackagePickedUpByCourierEvent(
+    val deliveryId: UUID,
+    val courierId: UUID,
+    val pickedUpAt: Instant,
+)
+
+// Aggregate handler
 @CommandHandler
 fun handle(command: MarkPickedUpByCourierCommand) {
     require(status == DeliveryStatus.DROPPED_BY_BAKER) {
-        "Package must be dropped by baker before pickup. Current: $status"
+        "Package must be dropped by baker before pickup"
     }
     apply(PackagePickedUpByCourierEvent(...))
 }
@@ -170,322 +252,200 @@ fun handle(command: MarkPickedUpByCourierCommand) {
 @EventSourcingHandler
 fun on(event: PackagePickedUpByCourierEvent) {
     this.status = DeliveryStatus.IN_TRANSIT
-    // Track courier info, pickup time
+    this.courierId = event.courierId
+    this.pickedUpAt = event.pickedUpAt
 }
 
-// Similar handlers for DROPPED_BY_COURIER and DELIVERED transitions
+// REST endpoint
+@PutMapping("/{deliveryId}/pickup")
+fun markPickedUp(
+    @PathVariable deliveryId: String,
+    @RequestBody request: PickupRequest,  // courierId
+)
 ```
 
-### 3. Integration Points
+### 3. Courier Drop Command
 
-#### Event Flow
+```kotlin
+data class MarkDroppedByCourierCommand(
+    @TargetAggregateIdentifier
+    val deliveryId: UUID,
+    val courierId: UUID,
+    val latitude: BigDecimal,
+    val longitude: BigDecimal,
+    val photoUrl: String,
+)
 
-1. **Payment → Delivery Creation**
-   - `PaymentMarkedPaidEvent` → creates `PackageDelivery` (EXISTS)
-
-2. **Baker Drops Package**
-   - `MarkDroppedByBakerCommand` → `PackageDroppedByBakerEvent` (EXISTS)
-   - Event handled by product-delivery-service (read model) (EXISTS)
-   - Event handled by **courier-service** (NEW) → creates anonymized offer
-
-3. **Courier Accepts Offer**
-   - REST call to courier-service
-   - `AcceptDeliveryOfferCommand` → `DeliveryOfferAcceptedEvent` (NEW)
-   - product-delivery-service updates tracking (NEW)
-
-4. **Courier Gets Full Location**
-   - REST call to courier-service with courier location
-   - Business logic checks proximity
-   - Returns full `PackageLocationInfo` with photo (NEW)
-
-5. **Courier Picks Up Package**
-   - REST call to either service
-   - `MarkPickedUpByCourierCommand` → `PackagePickedUpByCourierEvent` (NEW)
-   - Status: `IN_TRANSIT`
-
-6. **Courier Drops at Destination**
-   - REST call to product-delivery-service
-   - `MarkDroppedByCourierCommand` → `PackageDroppedByCourierEvent` (NEW)
-   - Status: `DROPPED_BY_COURIER`
-
-7. **Recipient Confirms**
-   - REST call to product-delivery-service
-   - `MarkDeliveredCommand` → `PackageDeliveredEvent` (NEW)
-   - Status: `DELIVERED`
-
-#### Axon Framework Considerations
-
-- All services connect to shared Axon Server (axon-server:8124)
-- Events published by one service are automatically received by handlers in other services
-- Use `@EventHandler` in courier-service to listen for events from product-delivery-service
-- Commands are processed by aggregate repositories in their respective services
-- Queries can cross services via QueryGateway but typically stay within service boundaries
-
-### 4. Configuration and Deployment
-
-#### Application Configuration Pattern
-
-Each service needs `application-prod.yml` and `application-dev.yml`:
-
-**application-prod.yml** (for Docker):
-```yaml
-spring:
-  application:
-    name: courier-service
-  datasource:
-    url: jdbc:postgresql://postgres-courier:5432/db
-    username: admin
-    password: admin
-  jpa:
-    hibernate:
-      ddl-auto: update
-
-server:
-  port: 8080
-
-axon:
-  axonserver:
-    servers: axon-server:8124
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: [health, metrics, prometheus]
-
-logging:
-  loki:
-    url: http://loki:3100
+data class PackageDroppedByCourierEvent(
+    val deliveryId: UUID,
+    val courierId: UUID,
+    val droppedAt: Instant,
+    val latitude: BigDecimal,
+    val longitude: BigDecimal,
+    val photoUrl: String,
+)
 ```
 
-**application-dev.yml** (for local development):
-```yaml
-spring:
-  application:
-    name: courier-service
-  datasource:
-    url: jdbc:h2:mem:courierdb
-  jpa:
-    hibernate:
-      ddl-auto: create-drop
+### 4. Delivery Confirmation Command
 
-server:
-  port: 8087
+```kotlin
+data class MarkDeliveredCommand(
+    @TargetAggregateIdentifier
+    val deliveryId: UUID,
+    val recipientConfirmation: String?,  // Optional signature/code
+)
 
-axon:
-  axonserver:
-    servers: localhost:8124
+data class PackageDeliveredEvent(
+    val deliveryId: UUID,
+    val deliveredAt: Instant,
+)
 ```
 
-#### Docker Compose Additions
+### 5. PackageDelivery Aggregate Updates
 
-Add to `docker-compose.yml`:
-
-```yaml
-postgres-courier:
-  image: postgres:17
-  ports:
-    - 5439:5432
-  environment:
-    POSTGRES_USER: admin
-    POSTGRES_PASSWORD: admin
-    POSTGRES_DB: db
-
-courier-service:
-  image: kotlin-seminar/courier-service
-  build:
-    context: .
-    dockerfile: courier-service/Dockerfile
-  ports:
-    - 8087:8080
-  depends_on:
-    - axon-server
-    - postgres-courier
-    - loki
-    - prometheus
-  environment:
-    spring_profiles_active: prod
-    LOKI_ADD: loki
-    LOKI_PORT: 3100
-  volumes:
-    - ./spring/config:/config
+Add fields to `PackageDelivery.kt`:
+```kotlin
+var courierId: UUID? = null
+var pickedUpAt: Instant? = null
+var courierDroppedAt: Instant? = null
+var courierDropLatitude: BigDecimal? = null
+var courierDropLongitude: BigDecimal? = null
+var courierDropPhotoUrl: String? = null
+var deliveredAt: Instant? = null
 ```
-
-#### Prometheus Configuration
-
-Add to `prometheus.yml`:
-
-```yaml
-- job_name: 'courier-service'
-  metrics_path: '/actuator/prometheus'
-  static_configs:
-    - targets: ['courier-service:8080']
-      labels:
-        service: 'courier-service'
-```
-
-#### Dockerfile
-
-Copy from `product-delivery-service/Dockerfile` and update:
-- Line 14: `COPY courier-service ./courier-service`
-- Line 17: `RUN gradle :courier-service:clean :courier-service:bootJar --no-daemon`
-- Line 20: `RUN ls -l courier-service/build/libs`
-- Line 28: `COPY --from=build --chown=app-user:app-user /application/courier-service/build/libs/*.jar app.jar`
-- Line 36: `CMD ["java", "-jar", "app.jar", "--spring.config.additional-location=/config/courier-service/"]`
-
-### 5. Testing Strategy
-
-#### Unit Tests
-- Command handlers: verify state transitions
-- Event handlers: verify read model updates
-- Business logic: proximity checks, authorization
-
-#### Integration Tests
-- Event propagation from product-delivery-service to courier-service
-- Full workflow: drop by baker → courier accepts → courier picks up
-
-#### Manual Testing via Swagger
-- Courier service: http://localhost:8087/swagger-ui.html
-- Test anonymization: verify coordinates are rounded, no photo in anonymized DTO
-- Test proximity check: try accessing full location from different courier positions
-
-### 6. Implementation Order (Recommended)
-
-1. **Setup courier-service module structure**
-   - Copy directory structure
-   - Create Application class
-   - Configure build.gradle.kts, settings.gradle.kts
-   - Add Docker, docker-compose, Prometheus configs
-
-2. **Define shared contracts**
-   - Events: DeliveryOfferAcceptedEvent, PackagePickedUpByCourierEvent
-   - DTOs: AnonymizedPackageLocationInfoDTO, PackageLocationInfoDTO
-   - Queries: AvailableDeliveriesQuery, PackageLocationQuery
-
-3. **Implement courier-service read models**
-   - Create JPA entities: AnonymizedPackageLocationInfo, PackageLocationInfo
-   - Create repositories
-   - Implement PackageDroppedByBakerEventHandler
-
-4. **Implement courier acceptance flow**
-   - Create CourierDeliveryAcceptance aggregate
-   - Command: AcceptDeliveryOfferCommand
-   - Event: DeliveryOfferAcceptedEvent
-   - Controller endpoint: POST /courier/accept-delivery
-
-5. **Implement location access control**
-   - Controller endpoint: GET /courier/deliveries/{id}/location
-   - Business logic: check courier acceptance + proximity
-   - Return full location or 403
-
-6. **Update product-delivery-service**
-   - Add new commands: MarkPickedUpByCourierCommand, etc.
-   - Add event sourcing handlers in PackageDelivery aggregate
-   - Add event handlers for courier events
-   - Add REST endpoints for pickup/drop/delivery
-
-7. **End-to-end testing**
-   - Build all: `./gradlew build`
-   - Start stack: `docker compose up`
-   - Test full workflow via Swagger UIs
-
-### 7. Key Design Decisions To Make
-
-The following design decisions need to be made during implementation:
-
-1. **Proximity Threshold**
-   - How close must courier be to see full location? (suggestion: 500m-1km)
-   - Should threshold be configurable?
-
-2. **Anonymization Precision**
-   - How much to reduce coordinate precision? (suggestion: 2-3 decimal places = ~100m accuracy)
-   - Should it be configurable per region?
-
-3. **Concurrent Acceptance**
-   - Can multiple couriers accept same delivery?
-   - First-come-first-served, or assignment algorithm?
-
-4. **Courier Authentication**
-   - How is `courierId` provided? JWT token? Header?
-   - Integration with existing auth system?
-
-5. **Location Verification**
-   - Trust courier's reported location?
-   - Require GPS/mobile verification?
-
-6. **State Transitions**
-   - What happens if courier accepts but never picks up?
-   - Timeout mechanism? Re-offer to other couriers?
-
-7. **Read Model Consistency**
-   - How to handle eventual consistency between services?
-   - Retry logic for event processing failures?
-
-### 8. API Documentation
-
-Update `README.md` to add:
-
-```markdown
-### Courier Service
-- **Swagger UI**: http://localhost:8087/swagger-ui.html
-- **OpenAPI Spec**: http://localhost:8087/api-docs
-```
-
-## Reference Files
-
-### Key Existing Files to Study
-
-1. **Service Structure Reference**: `product-delivery-service/` (newest service, good template)
-2. **Aggregate Pattern**: `product-delivery-service/src/main/kotlin/org/pv293/kotlinseminar/productDeliveryService/application/aggregates/PackageDelivery.kt`
-3. **Event Handler Pattern**: `product-delivery-service/src/main/kotlin/org/pv293/kotlinseminar/productDeliveryService/events/handlers/PackageDroppedByBakerEventHandler.kt`
-4. **Controller Pattern**: `product-delivery-service/src/main/kotlin/org/pv293/kotlinseminar/productDeliveryService/controllers/PackageDeliveryController.kt`
-5. **Build Config**: `product-delivery-service/build.gradle.kts`
-6. **Docker Pattern**: `product-delivery-service/Dockerfile`
-
-### Axon Framework Documentation
-
-Primary docs: https://docs.axoniq.io/home/
-
-Key concepts to understand:
-- Command handling in aggregates
-- Event sourcing
-- Event handling in separate components
-- Query handling with read models
-- Sagas (if needed for complex workflows)
-
-## Questions For Clarification
-
-Before starting implementation, consider clarifying:
-
-1. Should courier-service handle the actual pickup/drop commands, or should those stay in product-delivery-service?
-2. What level of real-time tracking is needed for couriers?
-3. Should there be notifications (email/SMS) at various stages?
-4. Is there a payment/rating system for couriers?
-5. Should the system support multiple drop locations (courier picks up, drops at multiple destinations)?
-
-## Success Criteria
-
-Implementation is complete when:
-
-1. `courier-service` successfully listens to `PackageDroppedByBakerEvent`
-2. Couriers can see list of available deliveries with anonymized locations
-3. Couriers can accept delivery offers
-4. Couriers receive full location info only when accepted and nearby
-5. Full location includes photo URL, anonymized version does not
-6. Package transitions through all states: CREATED → DROPPED_BY_BAKER → IN_TRANSIT → DROPPED_BY_COURIER → DELIVERED
-7. All services run successfully in docker-compose
-8. Swagger UI shows all endpoints for courier-service at port 8087
-9. End-to-end workflow completes without errors
 
 ---
 
-## Closing Notes
+## Design Decisions Made
 
-This handoff document provides a roadmap, not exact implementation details. The next developer should:
-- Follow existing code patterns from other services
-- Make pragmatic design decisions documented above
-- Add appropriate logging for debugging
-- Test incrementally, not big-bang
-- Update this document if significant decisions change
+| Decision | Choice | Rationale |
+|----------|--------|-----------|
+| Nearby courier radius | 5km | Reasonable urban delivery distance |
+| Courier notification | All at once | Simpler than sequential assignment |
+| Offer acceptance | First-come-first-served | AvailableDeliveryOffer status changes to ACCEPTED |
+| Coordinate anonymization | 2 decimal places | ~100m precision, protects exact location |
+| Offer expiration | Not implemented | Simplicity; can add later if needed |
+| Courier location verification | Not implemented | Trust client-reported location for now |
+| Courier ID source | Client-provided | No auth system integration yet |
 
-Good luck! The existing services provide excellent reference implementations. When in doubt, copy the pattern from `product-delivery-service` and adapt for courier domain.
+---
+
+## Configuration
+
+| Service | Port (Docker) | Postgres Port |
+|---------|---------------|---------------|
+| courier-service | 8087 | 5439 |
+
+**Swagger UI:** http://localhost:8087/swagger-ui.html
+
+---
+
+## Testing the Current Implementation
+
+### 1. Start the stack
+```bash
+docker compose up
+```
+
+### 2. Mark a courier as available
+```bash
+curl -X PUT http://localhost:8087/couriers/11111111-1111-1111-1111-111111111111/available \
+  -H "Content-Type: application/json" \
+  -d '{"latitude": 49.2, "longitude": 16.6}'
+```
+
+### 3. Create and pay for an order (triggers delivery creation)
+Use product-selection-service and payment-service endpoints.
+
+### 4. Drop package by baker
+```bash
+curl -X PUT http://localhost:8086/deliveries/{deliveryId}/drop-by-baker \
+  -H "Content-Type: application/json" \
+  -d '{"latitude": 49.2, "longitude": 16.6, "photoUrl": "https://example.com/photo.jpg"}'
+```
+
+### 5. Check courier received offer
+```bash
+curl http://localhost:8087/delivery-offers?courierId=11111111-1111-1111-1111-111111111111
+```
+
+### 6. Accept the offer
+```bash
+curl -X POST http://localhost:8087/delivery-offers/{offerId}/accept \
+  -H "Content-Type: application/json" \
+  -d '{"courierId": "11111111-1111-1111-1111-111111111111"}'
+```
+
+---
+
+## Remaining Work Checklist
+
+- [ ] Add `PackagePickedUpByCourierEvent` to shared module
+- [ ] Add `PackageDroppedByCourierEvent` to shared module
+- [ ] Add `PackageDeliveredEvent` to shared module
+- [ ] Update `PackageDelivery` aggregate with new command handlers
+- [ ] Add courier-related fields to `PackageDelivery` entity
+- [ ] Add REST endpoints for pickup/drop/delivered in product-delivery-service
+- [ ] Implement proximity-based full location access in courier-service
+- [ ] (Optional) Cancel other pending offers when one is accepted
+- [ ] (Optional) Add offer expiration mechanism
+
+---
+
+## Commit History (24 commits)
+
+### Phase 1: Basic Service Setup (Commits 1-8)
+1. `build(courier-service): add gradle configuration and project structure`
+2. `chore(courier-service): add Spring Boot and logging configuration`
+3. `feat(courier-service): implement application class and Axon config`
+4. `build(courier-service): add Dockerfile for containerized deployment`
+5. `ci(courier-service): integrate with docker-compose and prometheus`
+6. `docs(courier-service): add service documentation to README`
+7. `feat(courier-service): add JPA entities for location tracking`
+8. `feat(courier-service): add PackageDroppedByBakerEventHandler`
+
+### Phase 2: Grafana + Courier Queue (Commits 9-14)
+9. `chore(grafana): add courier-service to dashboard`
+10. `feat(shared): add CourierQueue events and DTOs`
+11. `feat(courier-service): add CourierQueue aggregate and commands`
+12. `feat(courier-service): configure CourierQueue aggregate repository`
+13. `feat(courier-service): add repository and query handler for CourierQueue`
+14. `feat(courier-service): add REST controller for courier availability`
+
+### Phase 3: Delivery Offer Flow (Commits 15-24)
+15. `feat(shared): add DeliveryOfferAcceptedEvent`
+16. `feat(shared): add AvailableDeliveryOfferDTO and query`
+17. `feat(courier-service): add DeliveryOfferCreatedEvent`
+18. `feat(courier-service): add AvailableDeliveryOffer aggregate with commands`
+19. `feat(courier-service): configure AvailableDeliveryOffer aggregate repository`
+20. `feat(courier-service): add CourierNotificationService (mock)`
+21. `feat(courier-service): add CourierNeededPolicy event handler`
+22. `feat(courier-service): add DeliveryOfferQueryHandler`
+23. `feat(courier-service): add DeliveryOfferController endpoints`
+24. `feat(product-delivery-service): handle DeliveryOfferAcceptedEvent`
+
+---
+
+## Reference Files
+
+| Purpose | File |
+|---------|------|
+| CourierNeeded Policy | `courier-service/.../application/policies/CourierNeededPolicy.kt` |
+| Offer Aggregate | `courier-service/.../application/aggregates/AvailableDeliveryOffer.kt` |
+| Courier Aggregate | `courier-service/.../application/aggregates/CourierQueue.kt` |
+| Delivery Controller | `courier-service/.../controllers/DeliveryOfferController.kt` |
+| Axon Config | `courier-service/.../infrastructure/AxonConfig.kt` |
+| Cross-service Event | `shared/.../courierService/events/impl/DeliveryOfferAcceptedEvent.kt` |
+
+---
+
+## Axon Framework Documentation
+
+Primary docs: https://docs.axoniq.io/home/
+
+Key patterns used:
+- State-stored aggregates with JPA (`@Entity` + `@Aggregate`)
+- Command handling in aggregates (`@CommandHandler`)
+- Event sourcing handlers (`@EventSourcingHandler`)
+- External event handlers for cross-service communication (`@EventHandler`)
+- Query handlers for read models (`@QueryHandler`)

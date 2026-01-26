@@ -1,7 +1,4 @@
-version: '3'
-
 services:
-  #  docker run -d --name axonserver -p 8024:8024 -p 8124:8124 axoniq/axonserver
   axon-server:
     image: axoniq/axonserver:latest
     ports:
@@ -12,13 +9,13 @@ services:
     volumes:
       - axon-data:/data
       - axon-eventdata:/eventdata
-      - ./axon/config:/config
+      - ./axon/config:/config:Z
   prometheus:
     image: prom/prometheus
     ports:
       - 9090:9090
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:Z
     depends_on:
       - axon-server
   loki:
@@ -31,46 +28,14 @@ services:
     ports:
       - 3000:3000
     volumes:
-      - ./grafana/datasources:/etc/grafana/provisioning/datasources
-      - ./grafana/dashboards:/var/lib/grafana/dashboards/
-      - ./grafana/dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml
+      - ./grafana/datasources:/etc/grafana/provisioning/datasources:Z
+      - ./grafana/dashboards:/var/lib/grafana/dashboards/:Z
+      - ./grafana/dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml:Z
     depends_on:
       - prometheus
     environment:
       GF_SECURITY_ADMIN_USER: admin
       GF_SECURITY_ADMIN_PASSWORD: admin
-  postgres-courses:
-    image: postgres:17
-    ports:
-      - 5432:5432
-    environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin
-      POSTGRES_DB: db
-  postgres-enrollment:
-    image: postgres:17
-    ports:
-      - 5433:5432
-    environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin
-      POSTGRES_DB: db
-  postgres-forum:
-    image: postgres:17
-    ports:
-      - 5434:5432
-    environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin
-      POSTGRES_DB: db
-  postgres-assignment:
-    image: postgres:17
-    ports:
-      - 5435:5432
-    environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin
-      POSTGRES_DB: db
   postgres-product-selection:
     image: postgres:17
     ports:
@@ -95,78 +60,14 @@ services:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin
       POSTGRES_DB: db
-  courses-service:
-    image: kotlin-seminar/courses-service
-    build:
-      context: .
-      dockerfile: courses-service/Dockerfile
+  postgres-courier:
+    image: postgres:17
     ports:
-      - 8081:8080
-    depends_on:
-      - axon-server
-      - postgres-courses
-      - loki
-      - prometheus
+      - 5439:5432
     environment:
-      spring_profiles_active: prod
-      LOKI_ADD: loki
-      LOKI_PORT: 3100
-    volumes:
-      - ./spring/config:/config
-  enrollment-service:
-    image: kotlin-seminar/enrollment-service
-    build:
-      context: .
-      dockerfile: enrollment-service/Dockerfile
-    ports:
-      - 8080:8080
-    depends_on:
-      - axon-server
-      - postgres-enrollment
-      - loki
-      - prometheus
-    environment:
-      spring_profiles_active: prod
-      LOKI_ADD: loki
-      LOKI_PORT: 3100
-    volumes:
-      - ./spring/config:/config
-  forum-service:
-    image: kotlin-seminar/forum-service
-    build:
-      context: .
-      dockerfile: forum-service/Dockerfile
-    ports:
-      - 8082:8080
-    depends_on:
-      - axon-server
-      - postgres-forum
-      - loki
-      - prometheus
-    environment:
-      spring_profiles_active: prod
-      LOKI_ADD: loki
-      LOKI_PORT: 3100
-    volumes:
-      - ./spring/config:/config
-  assignment-service:
-    image: kotlin-seminar/assignment-service
-    build:
-      context: .
-      dockerfile: assignment-service/Dockerfile
-    ports:
-      - 8083:8080
-    depends_on:
-      - axon-server
-      - postgres-forum
-      - loki
-      - prometheus
-    environment:
-      spring_profiles_active: prod
-      LOKI_ADD: loki
-      LOKI_PORT: 3100
-    volumes:
-      - ./spring/config:/config
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: db
 
   product-selection-service:
     image: kotlin-seminar/product-selection-service
@@ -185,7 +86,7 @@ services:
       LOKI_ADD: loki
       LOKI_PORT: 3100
     volumes:
-      - ./spring/config:/config
+      - ./spring/config:/config:z
 
   payment-service:
     image: kotlin-seminar/payment-service
@@ -204,7 +105,7 @@ services:
       LOKI_ADD: loki
       LOKI_PORT: 3100
     volumes:
-      - ./spring/config:/config
+      - ./spring/config:/config:z
 
   product-delivery-service:
     image: kotlin-seminar/product-delivery-service
@@ -223,10 +124,26 @@ services:
       LOKI_ADD: loki
       LOKI_PORT: 3100
     volumes:
-      - ./spring/config:/config
+      - ./spring/config:/config:z
 
-
-
+  courier-service:
+    image: kotlin-seminar/courier-service
+    build:
+      context: .
+      dockerfile: courier-service/Dockerfile
+    ports:
+      - 8087:8080
+    depends_on:
+      - axon-server
+      - postgres-courier
+      - loki
+      - prometheus
+    environment:
+      spring_profiles_active: prod
+      LOKI_ADD: loki
+      LOKI_PORT: 3100
+    volumes:
+      - ./spring/config:/config:z
 
 volumes:
   axon-data:
