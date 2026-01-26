@@ -33,3 +33,31 @@ Once the services are running, you can access the interactive API documentation 
 - **OpenAPI Spec**: http://localhost:8083/api-docs
 
 The Swagger UI provides interactive documentation where you can explore all available endpoints and test API calls directly from your browser.
+
+## Monitoring & Infrastructure
+
+Once the services are running, you can access the following monitoring and infrastructure tools:
+
+### Grafana Dashboard
+- **URL**: http://localhost:3000/d/spring-microservices
+- **Credentials**: username `admin`, password `admin`
+- Pre-configured datasources for Prometheus and Loki
+
+### Prometheus
+- **URL**: http://localhost:9090
+- Metrics and monitoring
+
+### Axon Server Dashboard
+- **URL**: http://localhost:8024
+- Event store and message routing
+
+### Loki
+- **URL**: http://localhost:3100
+- Log aggregation (accessible via Grafana)
+
+### PostgreSQL Databases
+- **Product Selection DB**: `localhost:5436`
+- **Payment DB**: `localhost:5437`
+- **Product Delivery DB**: `localhost:5438`
+- **Courier DB**: `localhost:5439`
+- **Credentials for all databases**: username `admin`, password `admin`, database `db`
