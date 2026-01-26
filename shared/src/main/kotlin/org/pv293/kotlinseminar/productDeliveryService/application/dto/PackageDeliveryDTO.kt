@@ -18,4 +18,10 @@ data class PackageDeliveryDTO(
     val offerId: UUID? = null,
     val courierAssignedAt: Instant? = null,
     val pickedUpAt: Instant? = null,
+    val customerLatitude: BigDecimal? = null,
+    val customerLongitude: BigDecimal? = null,
+    val droppedByCourierAt: Instant? = null,
+    val courierDropLatitude: BigDecimal? = null,
+    val courierDropLongitude: BigDecimal? = null,
+    val courierDropPhotoUrl: String? = null,
 )

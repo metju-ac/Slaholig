@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import org.axonframework.commandhandling.gateway.CommandGateway
 import org.axonframework.queryhandling.QueryGateway
 import org.pv293.kotlinseminar.productDeliveryService.application.commands.impl.MarkDroppedByBakerCommand
+import org.pv293.kotlinseminar.productDeliveryService.application.commands.impl.MarkDroppedByCourierCommand
 import org.pv293.kotlinseminar.productDeliveryService.application.commands.impl.MarkPickedUpByCourierCommand
 import org.pv293.kotlinseminar.productDeliveryService.application.dto.PackageDeliveryDTO
 import org.pv293.kotlinseminar.productDeliveryService.application.queries.impl.PackageDeliveryQuery
@@ -29,6 +30,13 @@ data class DropPackageRequest(
 
 data class PickupRequest(
     val courierId: String,
+)
+
+data class CourierDropRequest(
+    val courierId: String,
+    val latitude: BigDecimal,
+    val longitude: BigDecimal,
+    val photoUrl: String,
 )
 
 @RestController
@@ -131,6 +139,46 @@ class PackageDeliveryController(
             MarkPickedUpByCourierCommand(
                 deliveryId = deliveryUUID,
                 courierId = courierUUID,
+            ),
+        )
+
+        // Query updated state
+        val delivery = queryGateway.query(
+            PackageDeliveryQuery(deliveryId = deliveryUUID),
+            PackageDeliveryDTO::class.java,
+        ).join()
+
+        return ResponseEntity.ok(delivery)
+    }
+
+    @PutMapping("/{deliveryId}/drop-by-courier")
+    @Operation(summary = "Mark package as dropped by courier at customer location")
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "200", description = "Package delivered successfully"),
+            ApiResponse(responseCode = "400", description = "Invalid status, wrong courier, or drop location too far from customer address"),
+            ApiResponse(responseCode = "404", description = "Delivery not found"),
+        ],
+    )
+    fun dropPackageByCourier(
+        @PathVariable deliveryId: String,
+        @RequestBody request: CourierDropRequest,
+    ): ResponseEntity<PackageDeliveryDTO> {
+        logger.info(
+            "PUT /deliveries/{}/drop-by-courier by courier {} at ({}, {})",
+            deliveryId, request.courierId, request.latitude, request.longitude,
+        )
+
+        val deliveryUUID = UUID.fromString(deliveryId)
+        val courierUUID = UUID.fromString(request.courierId)
+
+        commandGateway.sendAndWait<Any>(
+            MarkDroppedByCourierCommand(
+                deliveryId = deliveryUUID,
+                courierId = courierUUID,
+                latitude = request.latitude,
+                longitude = request.longitude,
+                photoUrl = request.photoUrl,
             ),
         )
 

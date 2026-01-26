@@ -44,6 +44,12 @@ class PackageDeliveryQueryHandler(
                 offerId = it.offerId,
                 courierAssignedAt = it.courierAssignedAt,
                 pickedUpAt = it.pickedUpAt,
+                customerLatitude = it.customerLatitude,
+                customerLongitude = it.customerLongitude,
+                droppedByCourierAt = it.droppedByCourierAt,
+                courierDropLatitude = it.courierDropLatitude,
+                courierDropLongitude = it.courierDropLongitude,
+                courierDropPhotoUrl = it.courierDropPhotoUrl,
             )
         }
     }
