@@ -43,6 +43,8 @@ class OrderCreatedEventHandler(
                 orderId = event.orderId,
                 cartId = event.cartId,
                 items = items,
+                customerLatitude = event.customerLatitude,
+                customerLongitude = event.customerLongitude,
             ),
         )
     }
