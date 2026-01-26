@@ -14,4 +14,8 @@ data class PackageDeliveryDTO(
     val latitude: BigDecimal? = null,
     val longitude: BigDecimal? = null,
     val photoUrl: String? = null,
+    val courierId: UUID? = null,
+    val offerId: UUID? = null,
+    val courierAssignedAt: Instant? = null,
+    val pickedUpAt: Instant? = null,
 )

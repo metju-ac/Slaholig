@@ -40,6 +40,10 @@ class PackageDeliveryQueryHandler(
                 latitude = it.latitude,
                 longitude = it.longitude,
                 photoUrl = it.photoUrl,
+                courierId = it.courierId,
+                offerId = it.offerId,
+                courierAssignedAt = it.courierAssignedAt,
+                pickedUpAt = it.pickedUpAt,
             )
         }
     }
