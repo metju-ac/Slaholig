@@ -11,8 +11,10 @@ import org.axonframework.eventsourcing.EventSourcingHandler
 import org.axonframework.modelling.command.AggregateIdentifier
 import org.axonframework.modelling.command.AggregateLifecycle.apply
 import org.axonframework.spring.stereotype.Aggregate
+import org.pv293.kotlinseminar.productDeliveryService.application.commands.impl.AssignCourierCommand
 import org.pv293.kotlinseminar.productDeliveryService.application.commands.impl.CreatePackageDeliveryCommand
 import org.pv293.kotlinseminar.productDeliveryService.application.commands.impl.MarkDroppedByBakerCommand
+import org.pv293.kotlinseminar.productDeliveryService.events.impl.CourierAssignedEvent
 import org.pv293.kotlinseminar.productDeliveryService.events.impl.PackageDeliveryCreatedEvent
 import org.pv293.kotlinseminar.productDeliveryService.events.impl.PackageDroppedByBakerEvent
 import java.math.BigDecimal
@@ -56,6 +58,18 @@ class PackageDelivery() {
 
     @Column(nullable = true, length = 500)
     var photoUrl: String? = null
+
+    @Column(nullable = true)
+    var courierId: UUID? = null
+
+    @Column(nullable = true)
+    var offerId: UUID? = null
+
+    @Column(name = "courier_assigned_at", nullable = true)
+    var courierAssignedAt: Instant? = null
+
+    @Column(name = "picked_up_at", nullable = true)
+    var pickedUpAt: Instant? = null
 
     @CommandHandler
     constructor(command: CreatePackageDeliveryCommand) : this() {
@@ -104,5 +118,31 @@ class PackageDelivery() {
         this.latitude = event.latitude
         this.longitude = event.longitude
         this.photoUrl = event.photoUrl
+    }
+
+    @CommandHandler
+    fun handle(command: AssignCourierCommand) {
+        require(status == DeliveryStatus.DROPPED_BY_BAKER) {
+            "Package must be DROPPED_BY_BAKER to assign courier. Current status: $status"
+        }
+        require(courierId == null) {
+            "Courier already assigned: $courierId"
+        }
+
+        apply(
+            CourierAssignedEvent(
+                deliveryId = deliveryId,
+                courierId = command.courierId,
+                offerId = command.offerId,
+                assignedAt = Instant.now(),
+            ),
+        )
+    }
+
+    @EventSourcingHandler
+    fun on(event: CourierAssignedEvent) {
+        this.courierId = event.courierId
+        this.offerId = event.offerId
+        this.courierAssignedAt = event.assignedAt
     }
 }
