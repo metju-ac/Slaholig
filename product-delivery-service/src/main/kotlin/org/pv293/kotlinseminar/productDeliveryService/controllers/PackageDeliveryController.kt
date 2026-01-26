@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import org.axonframework.commandhandling.gateway.CommandGateway
 import org.axonframework.queryhandling.QueryGateway
 import org.pv293.kotlinseminar.productDeliveryService.application.commands.impl.MarkDroppedByBakerCommand
+import org.pv293.kotlinseminar.productDeliveryService.application.commands.impl.MarkPickedUpByCourierCommand
 import org.pv293.kotlinseminar.productDeliveryService.application.dto.DeliveryLocationDTO
 import org.pv293.kotlinseminar.productDeliveryService.application.dto.PackageDeliveryDTO
 import org.pv293.kotlinseminar.productDeliveryService.application.queries.impl.DeliveryLocationQuery
@@ -26,6 +27,10 @@ data class DropPackageRequest(
     val latitude: BigDecimal,
     val longitude: BigDecimal,
     val photoUrl: String,
+)
+
+data class PickupRequest(
+    val courierId: String,
 )
 
 @RestController
@@ -127,5 +132,39 @@ class PackageDeliveryController(
         } else {
             ResponseEntity.notFound().build()
         }
+    }
+
+    @PutMapping("/{deliveryId}/pickup")
+    @Operation(summary = "Mark package as picked up by courier")
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "200", description = "Package picked up successfully"),
+            ApiResponse(responseCode = "400", description = "Invalid status or courier not assigned"),
+            ApiResponse(responseCode = "404", description = "Delivery not found"),
+        ],
+    )
+    fun markPickedUpByCourier(
+        @PathVariable deliveryId: String,
+        @RequestBody request: PickupRequest,
+    ): ResponseEntity<PackageDeliveryDTO> {
+        logger.info("PUT /deliveries/{}/pickup by courier {}", deliveryId, request.courierId)
+
+        val deliveryUUID = UUID.fromString(deliveryId)
+        val courierUUID = UUID.fromString(request.courierId)
+
+        commandGateway.sendAndWait<Any>(
+            MarkPickedUpByCourierCommand(
+                deliveryId = deliveryUUID,
+                courierId = courierUUID,
+            ),
+        )
+
+        // Query updated state
+        val delivery = queryGateway.query(
+            PackageDeliveryQuery(deliveryId = deliveryUUID),
+            PackageDeliveryDTO::class.java,
+        ).join()
+
+        return ResponseEntity.ok(delivery)
     }
 }
