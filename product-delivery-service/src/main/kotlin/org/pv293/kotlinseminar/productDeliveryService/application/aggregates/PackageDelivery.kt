@@ -73,6 +73,24 @@ class PackageDelivery() {
     @Column(name = "picked_up_at", nullable = true)
     var pickedUpAt: Instant? = null
 
+    @Column(name = "customer_latitude", nullable = true, precision = 10, scale = 7)
+    var customerLatitude: BigDecimal? = null
+
+    @Column(name = "customer_longitude", nullable = true, precision = 10, scale = 7)
+    var customerLongitude: BigDecimal? = null
+
+    @Column(name = "dropped_by_courier_at", nullable = true)
+    var droppedByCourierAt: Instant? = null
+
+    @Column(name = "courier_drop_latitude", nullable = true, precision = 10, scale = 7)
+    var courierDropLatitude: BigDecimal? = null
+
+    @Column(name = "courier_drop_longitude", nullable = true, precision = 10, scale = 7)
+    var courierDropLongitude: BigDecimal? = null
+
+    @Column(name = "courier_drop_photo_url", nullable = true, length = 500)
+    var courierDropPhotoUrl: String? = null
+
     @CommandHandler
     constructor(command: CreatePackageDeliveryCommand) : this() {
         apply(
@@ -82,6 +100,8 @@ class PackageDelivery() {
                 transactionId = command.transactionId,
                 status = DeliveryStatus.CREATED.name,
                 createdAt = Instant.now(),
+                customerLatitude = command.customerLatitude,
+                customerLongitude = command.customerLongitude,
             ),
         )
     }
@@ -93,6 +113,8 @@ class PackageDelivery() {
         this.transactionId = event.transactionId
         this.status = DeliveryStatus.valueOf(event.status)
         this.createdAt = event.createdAt
+        this.customerLatitude = event.customerLatitude
+        this.customerLongitude = event.customerLongitude
     }
 
     @CommandHandler
