@@ -278,15 +278,6 @@ fun on(event: PaymentCreatedEvent) {
 
 - `OrderCreatedFromCartEvent` - Triggers payment and downstream processes
 
-**API Endpoints**:
-
-- `/api/baked-goods` - Product catalog CRUD
-- `/api/shopping-cart` - Cart management
-- `/api/cart/checkout` - Order creation
-- `/api/orders` - Order queries
-- `/api/location` - Delivery location management
-- `/api/baked-goods/{id}/reviews` - Product reviews
-
 **Dependencies**: None (entry point service)
 
 ---
