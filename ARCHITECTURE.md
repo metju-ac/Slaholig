@@ -81,39 +81,53 @@ All architectural decisions are documented using Architecture Decision Records (
 │   Product     │          │    Payment    │          │   Delivery    │
 │   Selection   │          │    Service    │          │    Service    │
 │   Service     │          │               │          │               │
-│   :8080       │          │    :8081      │          │    :8082      │
-└───────┬───────┘          └───────┬───────┘          └───────┬───────┘
-        │                          │                          │
-        │                          │                          │
-        │     ┌────────────────────┼──────────────────────────┘
-        │     │                    │
-        │     │            ┌───────▼───────┐
-        │     │            │    Courier    │
-        │     │            │    Service    │
-        │     │            │    :8083      │
-        │     │            └───────┬───────┘
-        │     │                    │
-        └─────┼────────────────────┘
-              │
-        ┌─────▼─────┐
-        │   Axon    │◄───────── Event Bus & Command Bus
-        │   Server  │◄───────── Event Store
-        │   :8024   │
+│   :8080       │          │    :8081      │          │    :8082      │──────────────┐
+└───┬──────────┬┘          └───┬──────────┬┘          └──────────────┬┘              │ 
+    │      ┌───▼────-┐         │      ┌───▼────-┐               ┌────▼────┐          │
+    │      │ Postgres│         │      │ Postgres│               │ Postgres│          │
+    │      └─────────┘         │      └─────────┘               └─────────┘          │
+    │         ┌────────────────┘                                                     │
+    │         │                                                                      │
+    │         │            ┌───────────────┐                                         │
+    │         │            │    Courier    │                                         │
+    │         │            │    Service    │                                         │
+    │         │            │    :8083      │                                         │
+    │         │            └───────┬──────┬┘                                         │
+    │         │                    │  ┌───▼────-┐                                    │
+    │         │                    │  │ Postgres│                                    │
+    │         │                    │  └─────────┘                                    │
+    │         │                    │                                                 │
+    │         │                    │                                                 │
+    │         │    ┌───────────────┘                                                 │
+    │   ┌─────▼────▼┐                                                                │
+    └──>│   Axon    │◄───────── Event Bus & Command Bus                              │
+        │   Server  │◄───────── Event Store                                          │
+        │   :8024   │<───────────────────────────────────────────────────────────────┘
         └───────────┘
-              │
-    ┌─────────┼─────────┐
-    │                   │
-┌───▼────┐      ┌───────▼────┐      ┌──────────┐
-│ Postgres│     │ Prometheus │      │  Loki    │
-│ (x4)    │     │   :9090    │      │  :3100   │
-└─────────┘     └──────┬─────┘      └────┬─────┘
-                       │                  │
-                       └────────┬─────────┘
+  
+          
+                ┌───────▼────┐      ┌──────────┐
+                │ Prometheus │      │  Loki    │
+                │   :9090    │      │  :3100   │
+                └──────┬─────┘      └────┬─────┘
+                       │                 │
+                       └────────┬────────┘
                                 │
                         ┌───────▼───────┐
                         │    Grafana    │
                         │     :3000     │
                         └───────────────┘
+                        
+ Prometheus scrapes metrics from:
+   ├─ Product Selection Service (:8080 /actuator/prometheus)
+   ├─ Payment Service           (:8081 /actuator/prometheus)
+   ├─ Delivery Service          (:8082 /actuator/prometheus)
+   ├─ Courier Service           (:8083 /actuator/prometheus)
+   └─ Axon Server               (:8024)
+
+ Grafana uses:
+   ├─ Prometheus (metrics)
+   └─ Loki (logs)
 ```
 
 ### Event-Driven Choreography
@@ -319,7 +333,7 @@ fun on(event: PaymentCreatedEvent) {
 - `POST /api/payment/initiate/{orderId}` - Start payment for order
 - `GET /api/payment/{paymentId}` - Query payment status
 
-**Dependencies**: Product Selection Service (via `OrderCreatedFromCartEvent`)
+**Dependencies**: Share module (for all 4 services)
 
 ---
 
@@ -717,27 +731,6 @@ All services follow consistent Clean Architecture pattern:
 - **DTOs**: `<Entity>DTO` (e.g., `PaymentDTO`)
 - **Handlers**: `<Event>Handler` or `<DomainConcept>Policy`
 
-### Testing Strategy
-
-**Unit Tests**:
-
-- Aggregate command handlers
-- Event sourcing handlers
-- Business logic in domain services
-
-**Integration Tests**:
-
-- API endpoints (MockMvc)
-- Event handlers with test fixtures
-- Repository layer
-
-**Future Enhancements**:
-
-- Contract testing between services (Pact)
-- End-to-end testing (Testcontainers)
-- Load testing (Gatling)
-
----
 
 ## Future Enhancements
 
