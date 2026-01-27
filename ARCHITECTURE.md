@@ -690,3 +690,84 @@ Slaholig/
 - CQRS enables read replica scaling
 - Event sourcing replays can be optimized via snapshots
 - Eventual consistency reduces inter-service latency
+
+---
+
+## Development Guidelines
+
+### Code Structure
+
+All services follow consistent Clean Architecture pattern:
+
+```
+<service>/src/main/kotlin/org/pv293/kotlinseminar/<service>/
+├── application/              # Core domain layer
+│   ├── aggregates/          # Event-sourced aggregates
+│   ├── commands/            # Command definitions
+│   ├── queries/             # Query definitions
+│   ├── dto/                 # Data Transfer Objects
+│   ├── services/            # Domain services
+│   └── projections/         # Read model projections
+├── controllers/             # REST API adapters
+├── events/                  # Service-local events
+│   ├── impl/                # Event definitions
+│   └── handlers/            # Event handlers and policies
+├── infrastructure/          # Infrastructure configuration
+│   └── AxonConfig.kt        # Axon Framework setup
+├── repository/              # JPA repositories
+└── <Service>Application.kt  # Spring Boot entry point
+```
+
+### Naming Conventions
+
+- **Commands**: `<Action><Entity>Command` (e.g., `CreatePaymentCommand`)
+- **Events**: `<Entity><PastTenseAction>Event` (e.g., `PaymentCreatedEvent`)
+- **Queries**: `<Entity><What>Query` (e.g., `PaymentQuery`)
+- **DTOs**: `<Entity>DTO` (e.g., `PaymentDTO`)
+- **Handlers**: `<Event>Handler` or `<DomainConcept>Policy`
+
+### Testing Strategy
+
+**Unit Tests**:
+
+- Aggregate command handlers
+- Event sourcing handlers
+- Business logic in domain services
+
+**Integration Tests**:
+
+- API endpoints (MockMvc)
+- Event handlers with test fixtures
+- Repository layer
+
+**Future Enhancements**:
+
+- Contract testing between services (Pact)
+- End-to-end testing (Testcontainers)
+- Load testing (Gatling)
+
+---
+
+## Future Enhancements
+
+1. **API Gateway**: Centralized entry point with routing, rate limiting, auth
+2. **Service Discovery**: Eureka or Consul for dynamic service registration
+3. **Circuit Breaker**: Resilience4j for fault tolerance
+4. **Authentication**: OAuth2/JWT with Spring Security
+5. **Saga Compensation**: Explicit compensating transactions for rollback scenarios
+6. **Snapshots**: Event sourcing snapshots for performance optimization
+7. **Read Replicas**: Separate read-optimized projections for complex queries
+8. **Kubernetes**: Production deployment with auto-scaling and self-healing
+9. **Distributed Tracing**: OpenTelemetry / Jaeger for request tracing
+10. **Automated Testing**: Comprehensive test suite with CI/CD integration
+
+---
+
+## References
+
+- [Axon Framework Documentation](https://docs.axoniq.io/home/)
+- [AWS ADR Guidance](https://docs.aws.amazon.com/prescriptive-guidance/latest/architectural-decision-records/adr-process.html)
+- [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
+- [Microservices Patterns](https://microservices.io/patterns/microservices.html)
+- [Spring Boot Documentation](https://spring.io/projects/spring-boot)
+- [Kotlin Documentation](https://kotlinlang.org/docs/home.html)
