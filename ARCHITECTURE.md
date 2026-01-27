@@ -61,3 +61,196 @@ All architectural decisions are documented using Architecture Decision Records (
 - [ADR-006: Database per Service Pattern](./docs/adr/006-database-per-service.md)
 - [ADR-007: Saga Pattern for Distributed Transactions](./docs/adr/007-saga-pattern.md)
 - [ADR-008: Spring Boot Framework](./docs/adr/008-spring-boot-framework.md)
+
+---
+
+## Architecture Patterns
+
+### High-Level Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         API Gateway / Load Balancer              │
+│                          (Future - Currently Direct)             │
+└─────────────────────────────────────────────────────────────────┘
+                                    │
+        ┌───────────────────────────┼───────────────────────────┐
+        │                           │                           │
+        ▼                           ▼                           ▼
+┌───────────────┐          ┌───────────────┐          ┌───────────────┐
+│   Product     │          │    Payment    │          │   Delivery    │
+│   Selection   │          │    Service    │          │    Service    │
+│   Service     │          │               │          │               │
+│   :8080       │          │    :8081      │          │    :8082      │
+└───────┬───────┘          └───────┬───────┘          └───────┬───────┘
+        │                          │                          │
+        │                          │                          │
+        │     ┌────────────────────┼──────────────────────────┘
+        │     │                    │
+        │     │            ┌───────▼───────┐
+        │     │            │    Courier    │
+        │     │            │    Service    │
+        │     │            │    :8083      │
+        │     │            └───────┬───────┘
+        │     │                    │
+        └─────┼────────────────────┘
+              │
+        ┌─────▼─────┐
+        │   Axon    │◄───────── Event Bus & Command Bus
+        │   Server  │◄───────── Event Store
+        │   :8024   │
+        └───────────┘
+              │
+    ┌─────────┼─────────┐
+    │                   │
+┌───▼────┐      ┌───────▼────┐      ┌──────────┐
+│ Postgres│     │ Prometheus │      │  Loki    │
+│ (x4)    │     │   :9090    │      │  :3100   │
+└─────────┘     └──────┬─────┘      └────┬─────┘
+                       │                  │
+                       └────────┬─────────┘
+                                │
+                        ┌───────▼───────┐
+                        │    Grafana    │
+                        │     :3000     │
+                        └───────────────┘
+```
+
+### Event-Driven Choreography
+
+Services communicate exclusively via domain events published to Axon Server. There is no direct service-to-service
+communication via REST/HTTP between microservices.
+
+**Example Event Flow: Order Creation to Fund Release**
+
+```
+[Customer] → [Product Selection API] → CreateOrderFromCartCommand
+                                             │
+                                             ▼
+                                  OrderCreatedFromCartEvent
+                                             │
+                    ┌────────────────────────┴────────────────────────┐
+                    ▼                                                 ▼
+          [Payment Service]                              [Other Services]
+       OrderCreatedEventHandler                          (if interested)
+                    │
+                    ▼
+          CreatePaymentCommand → Payment Aggregate
+                    │
+                    ▼
+          PaymentCreatedEvent
+                    │
+        (Customer pays via API)
+                    │
+                    ▼
+          PayOrderCommand → Payment Aggregate
+                    │
+                    ├─→ PaymentProcessingStartedEvent
+                    ├─→ PaymentSucceededEvent
+                    └─→ PaymentMarkedPaidEvent
+                                 │
+                ┌────────────────┴────────────────┐
+                ▼                                 ▼
+    [Delivery Service]                   [Other Services]
+ PaymentMarkedPaidEventHandler
+                │
+                ├─→ Send Email to Baker
+                └─→ CreatePackageDeliveryCommand
+                                 │
+                                 ▼
+                    PackageDeliveryCreatedEvent
+                                 │
+                    (Baker drops package)
+                                 │
+                                 ▼
+                    PackageDroppedByBakerEvent
+                                 │
+                ┌────────────────┴────────────────┐
+                ▼                                 ▼
+        [Courier Service]                [Delivery Service]
+     CourierNeededPolicy                (stores location)
+                │
+                ├─→ Find nearby couriers (< 5km)
+                └─→ CreateDeliveryOfferCommand (for each)
+                                 │
+                                 ▼
+                    DeliveryOfferCreatedEvent
+                                 │
+                    (Courier accepts offer)
+                                 │
+                                 ▼
+                    DeliveryOfferAcceptedEvent
+                                 │
+                                 ▼
+                    [Delivery Service]
+              DeliveryOfferAcceptedEventHandler
+                                 │
+                                 ▼
+                    AssignCourierCommand
+                                 │
+                    (Courier delivers)
+                                 │
+                                 ▼
+                    PackageRetrievedEvent
+                                 │
+                                 ▼
+                    [Payment Service]
+                     PayrollPolicy
+                                 │
+                                 └─→ ReleaseFundsCommand
+                                            │
+                                            ▼
+                                   FundsReleasedEvent
+```
+
+### CQRS Pattern
+
+Each service implements Command Query Responsibility Segregation:
+
+**Write Model (Command Side)**:
+
+- Event-sourced aggregates with `@Aggregate` annotation
+- Aggregates handle commands via `@CommandHandler`
+- State changes emit domain events via `AggregateLifecycle.apply()`
+- Events rebuild state via `@EventSourcingHandler`
+- Single source of truth stored in Axon event store
+
+**Read Model (Query Side)**:
+
+- Separate projection entities (JPA entities)
+- Event handlers update projections when domain events occur
+- Query handlers serve read requests via `@QueryHandler`
+- Optimized for specific query patterns
+- Eventually consistent with write model
+
+**Example: Payment Service**
+
+```kotlin
+// Write Model
+@Aggregate
+class Payment {
+    @CommandHandler
+    fun handle(command: CreatePaymentCommand) {
+        AggregateLifecycle.apply(PaymentCreatedEvent(...))
+    }
+
+    @EventSourcingHandler
+    fun on(event: PaymentCreatedEvent) {
+        // Rebuild state from event
+        this.paymentId = event.paymentId
+        this.status = PaymentStatus.CREATED
+    }
+}
+
+// Read Model (if needed for complex queries)
+@Entity
+class PaymentProjection {
+    // Optimized for queries
+}
+
+@EventHandler
+fun on(event: PaymentCreatedEvent) {
+    // Update projection
+    paymentRepository.save(PaymentProjection(...))
+}
+```
