@@ -12,8 +12,10 @@ import org.axonframework.modelling.command.AggregateIdentifier
 import org.axonframework.modelling.command.AggregateLifecycle.apply
 import org.axonframework.spring.stereotype.Aggregate
 import org.pv293.kotlinseminar.courierService.application.commands.impl.AcceptDeliveryOfferCommand
+import org.pv293.kotlinseminar.courierService.application.commands.impl.CancelDeliveryOfferCommand
 import org.pv293.kotlinseminar.courierService.application.commands.impl.CreateDeliveryOfferCommand
 import org.pv293.kotlinseminar.courierService.events.impl.DeliveryOfferAcceptedEvent
+import org.pv293.kotlinseminar.courierService.events.impl.DeliveryOfferCancelledEvent
 import org.pv293.kotlinseminar.courierService.events.impl.DeliveryOfferCreatedEvent
 import java.math.BigDecimal
 import java.time.Instant
@@ -105,5 +107,28 @@ class AvailableDeliveryOffer() {
     @EventSourcingHandler
     fun on(event: DeliveryOfferAcceptedEvent) {
         this.status = OfferStatus.ACCEPTED
+    }
+
+    @CommandHandler
+    fun handle(command: CancelDeliveryOfferCommand) {
+        if (status != OfferStatus.PENDING) {
+            // Already accepted or cancelled, ignore
+            return
+        }
+
+        apply(
+            DeliveryOfferCancelledEvent(
+                offerId = offerId,
+                deliveryId = deliveryId,
+                courierId = courierId,
+                reason = command.reason,
+                cancelledAt = Instant.now(),
+            ),
+        )
+    }
+
+    @EventSourcingHandler
+    fun on(event: DeliveryOfferCancelledEvent) {
+        this.status = OfferStatus.CANCELLED
     }
 }

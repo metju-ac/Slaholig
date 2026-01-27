@@ -2,6 +2,7 @@ package org.pv293.kotlinseminar.paymentService.application.commands.impl
 
 import org.axonframework.modelling.command.TargetAggregateIdentifier
 import org.pv293.kotlinseminar.paymentService.events.impl.OrderItemDTO
+import java.math.BigDecimal
 import java.util.UUID
 
 data class CreatePaymentCommand(
@@ -9,4 +10,6 @@ data class CreatePaymentCommand(
     val orderId: UUID,
     val cartId: UUID,
     val items: List<OrderItemDTO>,
+    val customerLatitude: BigDecimal?,
+    val customerLongitude: BigDecimal?,
 )

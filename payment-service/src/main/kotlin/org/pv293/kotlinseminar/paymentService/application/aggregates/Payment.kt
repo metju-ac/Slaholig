@@ -62,6 +62,12 @@ class Payment() {
     @Column(nullable = true)
     var walletAddress: String? = null
 
+    @Column(name = "customer_latitude", nullable = true, precision = 10, scale = 7)
+    var customerLatitude: BigDecimal? = null
+
+    @Column(name = "customer_longitude", nullable = true, precision = 10, scale = 7)
+    var customerLongitude: BigDecimal? = null
+
     @CommandHandler
     constructor(command: CreatePaymentCommand) : this() {
         apply(
@@ -70,6 +76,8 @@ class Payment() {
                 cartId = command.cartId,
                 items = command.items,
                 status = PaymentStatus.CREATED,
+                customerLatitude = command.customerLatitude,
+                customerLongitude = command.customerLongitude,
             ),
         )
     }
@@ -101,6 +109,8 @@ class Payment() {
                 PaymentMarkedPaidEvent(
                     orderId = command.orderId,
                     transactionId = result.transactionId,
+                    customerLatitude = customerLatitude,
+                    customerLongitude = customerLongitude,
                 ),
             )
         } else {
@@ -135,6 +145,8 @@ class Payment() {
             )
         }.toMutableList()
         this.status = event.status
+        this.customerLatitude = event.customerLatitude
+        this.customerLongitude = event.customerLongitude
     }
 
     @EventSourcingHandler

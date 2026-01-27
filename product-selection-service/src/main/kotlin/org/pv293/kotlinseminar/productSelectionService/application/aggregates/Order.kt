@@ -34,4 +34,10 @@ data class Order(
 
     @OneToMany(mappedBy = "order", cascade = [CascadeType.ALL], fetch = FetchType.EAGER, orphanRemoval = true)
     val items: MutableList<OrderItem> = mutableListOf(),
+
+    @Column(name = "customer_latitude", nullable = true, precision = 10, scale = 7)
+    val customerLatitude: BigDecimal? = null,
+
+    @Column(name = "customer_longitude", nullable = true, precision = 10, scale = 7)
+    val customerLongitude: BigDecimal? = null,
 )

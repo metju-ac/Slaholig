@@ -9,7 +9,9 @@ import org.axonframework.messaging.responsetypes.ResponseTypes
 import org.axonframework.queryhandling.QueryGateway
 import org.pv293.kotlinseminar.courierService.application.commands.impl.AcceptDeliveryOfferCommand
 import org.pv293.kotlinseminar.courierService.application.dto.AvailableDeliveryOfferDTO
+import org.pv293.kotlinseminar.courierService.application.dto.PackageLocationDTO
 import org.pv293.kotlinseminar.courierService.application.queries.impl.AvailableDeliveryOffersQuery
+import org.pv293.kotlinseminar.courierService.application.queries.impl.PackageLocationQuery
 import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.math.BigDecimal
 import java.util.UUID
 
 data class AcceptOfferRequest(
@@ -116,5 +119,47 @@ class DeliveryOfferController(
                 "status" to "ACCEPTED",
             ),
         )
+    }
+
+    @GetMapping("/{offerId}/location")
+    @Operation(summary = "Get package location (exact if within 500m, approximate otherwise)")
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "200", description = "Location retrieved"),
+            ApiResponse(responseCode = "403", description = "Courier has not accepted this offer"),
+            ApiResponse(responseCode = "404", description = "Offer or location not found"),
+        ],
+    )
+    fun getPackageLocation(
+        @PathVariable offerId: String,
+        @RequestParam courierId: String,
+        @RequestParam lat: BigDecimal,
+        @RequestParam lon: BigDecimal,
+    ): ResponseEntity<PackageLocationDTO> {
+        logger.info("GET /delivery-offers/$offerId/location by courier $courierId at ($lat, $lon)")
+
+        val offerUUID = UUID.fromString(offerId)
+        val courierUUID = UUID.fromString(courierId)
+
+        return try {
+            val location = queryGateway.query(
+                PackageLocationQuery(
+                    offerId = offerUUID,
+                    courierId = courierUUID,
+                    courierLatitude = lat,
+                    courierLongitude = lon,
+                ),
+                PackageLocationDTO::class.java,
+            ).join()
+
+            if (location != null) {
+                ResponseEntity.ok(location)
+            } else {
+                ResponseEntity.notFound().build()
+            }
+        } catch (e: IllegalArgumentException) {
+            logger.warn("Access denied: ${e.message}")
+            ResponseEntity.status(403).build()
+        }
     }
 }

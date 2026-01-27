@@ -10,6 +10,7 @@ import org.axonframework.modelling.command.AggregateLifecycle.apply
 import org.axonframework.spring.stereotype.Aggregate
 import org.pv293.kotlinseminar.productSelectionService.application.commands.impl.ChooseLocationCommand
 import org.pv293.kotlinseminar.productSelectionService.events.impl.LocationChosenEvent
+import java.math.BigDecimal
 import java.util.UUID
 
 @Entity
@@ -21,11 +22,11 @@ class ChosenLocation() {
     @AggregateIdentifier
     lateinit var id: UUID
 
-    @Column(name = "latitude")
-    var latitude: Double = 0.0
+    @Column(name = "latitude", precision = 10, scale = 7)
+    var latitude: BigDecimal = BigDecimal.ZERO
 
-    @Column(name = "longitude")
-    var longitude: Double = 0.0
+    @Column(name = "longitude", precision = 10, scale = 7)
+    var longitude: BigDecimal = BigDecimal.ZERO
 
     @CommandHandler
     constructor(command: ChooseLocationCommand) : this() {

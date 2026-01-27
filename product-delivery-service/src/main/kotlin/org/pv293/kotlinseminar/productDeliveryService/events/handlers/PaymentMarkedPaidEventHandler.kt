@@ -35,6 +35,8 @@ class PaymentMarkedPaidEventHandler(
                 deliveryId = deliveryId,
                 orderId = event.orderId,
                 transactionId = event.transactionId,
+                customerLatitude = event.customerLatitude,
+                customerLongitude = event.customerLongitude,
             ),
         )
         

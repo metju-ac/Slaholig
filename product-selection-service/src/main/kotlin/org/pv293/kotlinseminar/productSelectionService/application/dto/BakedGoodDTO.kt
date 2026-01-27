@@ -16,7 +16,7 @@ data class BakedGoodDTO(
     @field:Schema(example = "4.99")
     val price: BigDecimal,
     @field:Schema(example = "49.1951")
-    val latitude: Double,
+    val latitude: BigDecimal,
     @field:Schema(example = "16.6068")
-    val longitude: Double,
+    val longitude: BigDecimal,
 )

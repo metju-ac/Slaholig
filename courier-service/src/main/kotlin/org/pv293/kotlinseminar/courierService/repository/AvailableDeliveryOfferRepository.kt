@@ -11,4 +11,6 @@ interface AvailableDeliveryOfferRepository : JpaRepository<AvailableDeliveryOffe
     fun findByCourierId(courierId: UUID): List<AvailableDeliveryOffer>
     fun findByStatus(status: OfferStatus): List<AvailableDeliveryOffer>
     fun findByCourierIdAndStatus(courierId: UUID, status: OfferStatus): List<AvailableDeliveryOffer>
+    fun findByDeliveryId(deliveryId: UUID): List<AvailableDeliveryOffer>
+    fun findByDeliveryIdAndStatus(deliveryId: UUID, status: OfferStatus): List<AvailableDeliveryOffer>
 }

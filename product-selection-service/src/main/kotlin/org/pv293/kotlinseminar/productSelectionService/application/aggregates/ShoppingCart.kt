@@ -169,6 +169,8 @@ class ShoppingCart() {
                 orderId = command.orderId,
                 cartId = id,
                 items = command.items,
+                customerLatitude = command.customerLatitude,
+                customerLongitude = command.customerLongitude,
             ),
         )
     }

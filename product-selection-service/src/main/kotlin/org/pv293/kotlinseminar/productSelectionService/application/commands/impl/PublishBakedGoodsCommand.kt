@@ -11,6 +11,6 @@ data class PublishBakedGoodsCommand(
     val description: String?,
     val initialStock: Int,
     val price: BigDecimal,
-    val latitude: Double,
-    val longitude: Double,
+    val latitude: BigDecimal,
+    val longitude: BigDecimal,
 )

@@ -1,14 +1,9 @@
 package org.pv293.kotlinseminar.productDeliveryService.application.commands.impl
 
 import org.axonframework.modelling.command.TargetAggregateIdentifier
-import java.math.BigDecimal
 import java.util.UUID
 
-data class CreatePackageDeliveryCommand(
+data class RetrievePackageCommand(
     @TargetAggregateIdentifier
     val deliveryId: UUID,
-    val orderId: UUID,
-    val transactionId: String,
-    val customerLatitude: BigDecimal?,
-    val customerLongitude: BigDecimal?,
 )

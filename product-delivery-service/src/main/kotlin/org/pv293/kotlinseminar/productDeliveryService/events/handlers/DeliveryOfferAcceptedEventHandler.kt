@@ -1,17 +1,20 @@
 package org.pv293.kotlinseminar.productDeliveryService.events.handlers
 
+import org.axonframework.commandhandling.gateway.CommandGateway
 import org.axonframework.eventhandling.EventHandler
 import org.pv293.kotlinseminar.courierService.events.impl.DeliveryOfferAcceptedEvent
+import org.pv293.kotlinseminar.productDeliveryService.application.commands.impl.AssignCourierCommand
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
 /**
  * Handles DeliveryOfferAcceptedEvent from courier-service.
- * When a courier accepts a delivery offer, this handler logs the acceptance
- * and could update the PackageDelivery aggregate to track the assigned courier.
+ * When a courier accepts a delivery offer, this handler assigns the courier to the delivery.
  */
 @Component
-class DeliveryOfferAcceptedEventHandler {
+class DeliveryOfferAcceptedEventHandler(
+    private val commandGateway: CommandGateway,
+) {
     private val logger = LoggerFactory.getLogger(DeliveryOfferAcceptedEventHandler::class.java)
 
     @EventHandler
@@ -25,9 +28,14 @@ class DeliveryOfferAcceptedEventHandler {
         logger.info("Accepted at: ${event.acceptedAt}")
         logger.info("========================================")
 
-        // In a full implementation, this could:
-        // 1. Send a command to update the PackageDelivery aggregate with assigned courier
-        // 2. Cancel other pending offers for the same delivery
-        // 3. Notify the baker that a courier has been assigned
+        logger.info("Assigning courier ${event.courierId} to delivery ${event.deliveryId}")
+
+        commandGateway.send<Any>(
+            AssignCourierCommand(
+                deliveryId = event.deliveryId,
+                courierId = event.courierId,
+                offerId = event.offerId,
+            ),
+        )
     }
 }

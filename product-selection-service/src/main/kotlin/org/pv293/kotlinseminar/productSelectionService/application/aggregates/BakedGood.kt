@@ -42,11 +42,11 @@ class BakedGood() {
     @Column(name = "stock")
     var stock: Int = 0
 
-    @Column(name = "latitude")
-    var latitude: Double = 0.0
+    @Column(name = "latitude", precision = 10, scale = 7)
+    var latitude: BigDecimal = BigDecimal.ZERO
 
-    @Column(name = "longitude")
-    var longitude: Double = 0.0
+    @Column(name = "longitude", precision = 10, scale = 7)
+    var longitude: BigDecimal = BigDecimal.ZERO
 
     @Column(name = "price", precision = 19, scale = 2)
     lateinit var price: BigDecimal
