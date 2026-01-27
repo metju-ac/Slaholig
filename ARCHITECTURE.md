@@ -254,3 +254,233 @@ fun on(event: PaymentCreatedEvent) {
     paymentRepository.save(PaymentProjection(...))
 }
 ```
+
+---
+
+## Service Details
+
+### Product Selection Service
+
+**Domain Model**:
+
+- `BakedGood`: Product catalog with pricing, reviews, and stock
+- `ShoppingCart`: Customer cart with items and quantities
+- `ChosenLocation`: Delivery address for customer
+- `Order`: Order projection (read model)
+
+**Key Aggregates**:
+
+- `BakedGood` (`application/aggregates/BakedGood.kt`)
+- `ShoppingCart` (`application/aggregates/ShoppingCart.kt`)
+- `ChosenLocation` (`application/aggregates/ChosenLocation.kt`)
+
+**Published Events** (shared):
+
+- `OrderCreatedFromCartEvent` - Triggers payment and downstream processes
+
+**API Endpoints**:
+
+- `/api/baked-goods` - Product catalog CRUD
+- `/api/shopping-cart` - Cart management
+- `/api/cart/checkout` - Order creation
+- `/api/orders` - Order queries
+- `/api/location` - Delivery location management
+- `/api/baked-goods/{id}/reviews` - Product reviews
+
+**Dependencies**: None (entry point service)
+
+---
+
+### Payment Service
+
+**Domain Model**:
+
+- `Payment`: Payment lifecycle with status transitions
+    - CREATED → PROCESSING → PAID → RELEASED
+
+**Key Aggregate**:
+
+- `Payment` (`application/aggregates/Payment.kt`)
+
+**Event Handlers**:
+
+- `OrderCreatedEventHandler` - Creates payment when order is placed
+- `PayrollPolicy` - Releases funds when package is retrieved
+
+**Published Events** (shared):
+
+- `PaymentMarkedPaidEvent` - Triggers delivery creation
+
+**Published Events** (local):
+
+- `PaymentCreatedEvent`
+- `PaymentProcessingStartedEvent`
+- `PaymentSucceededEvent`
+- `FundsReleasedEvent`
+
+**External Integrations**:
+
+- `CryptoPaymentGatewayService` - Mock cryptocurrency payment gateway
+- `PayrollService` - Mock fund release to merchants
+
+**API Endpoints**:
+
+- `POST /api/payment/initiate/{orderId}` - Start payment for order
+- `GET /api/payment/{paymentId}` - Query payment status
+
+**Dependencies**: Product Selection Service (via `OrderCreatedFromCartEvent`)
+
+---
+
+### Product Delivery Service
+
+**Domain Model**:
+
+- `PackageDelivery`: Delivery lifecycle with status transitions
+    - CREATED → DROPPED_BY_BAKER → IN_TRANSIT → DROPPED_BY_COURIER → RETRIEVED
+
+**Key Aggregate**:
+
+- `PackageDelivery` (`application/aggregates/PackageDelivery.kt`)
+
+**Event Handlers**:
+
+- `PaymentMarkedPaidEventHandler` - Creates delivery when payment succeeds
+- `DeliveryOfferAcceptedEventHandler` - Assigns courier when offer accepted
+- `PackageDroppedByCourierEventHandler` - Handles package drop
+
+**Published Events** (shared):
+
+- `PackageDroppedByBakerEvent` - Triggers courier offers
+- `PackageRetrievedEvent` - Triggers fund release
+
+**Published Events** (local):
+
+- `PackageDeliveryCreatedEvent`
+- `CourierAssignedEvent`
+- `PackagePickedUpByCourierEvent`
+- `PackageDroppedByCourierEvent`
+
+**External Integrations**:
+
+- `EmailNotificationService` - Mock email to bakers
+
+**Geolocation Validation**:
+
+- Uses `GeoDistanceCalculator` (shared) to validate courier drop location
+- Ensures courier drops within 100m of customer location
+
+**API Endpoints**:
+
+- `POST /api/deliveries/{deliveryId}/mark-dropped-by-baker` - Baker drops package
+- `POST /api/deliveries/{deliveryId}/mark-picked-up-by-courier` - Courier picks up
+- `POST /api/deliveries/{deliveryId}/mark-dropped-by-courier` - Courier drops
+- `POST /api/deliveries/{deliveryId}/retrieve` - Customer retrieves
+- `GET /api/deliveries/{deliveryId}` - Query delivery status
+
+**Dependencies**:
+
+- Payment Service (via `PaymentMarkedPaidEvent`)
+- Courier Service (via `DeliveryOfferAcceptedEvent`)
+
+---
+
+### Courier Service
+
+**Domain Model**:
+
+- `CourierQueue`: Courier availability and location tracking
+- `AvailableDeliveryOffer`: Delivery offers to nearby couriers
+    - PENDING → ACCEPTED/CANCELLED
+- `PackageLocationInfo`: Full precision package location
+- `AnonymizedPackageLocationInfo`: Privacy-reduced location (2 decimal places)
+
+**Key Aggregates**:
+
+- `CourierQueue` (`application/aggregates/CourierQueue.kt`)
+- `AvailableDeliveryOffer` (`application/aggregates/AvailableDeliveryOffer.kt`)
+- `PackageLocationInfo` (`application/aggregates/PackageLocationInfo.kt`)
+- `AnonymizedPackageLocationInfo` (`application/aggregates/AnonymizedPackageLocationInfo.kt`)
+
+**Event Handlers / Policies**:
+
+- `CourierNeededPolicy` - Creates offers for nearby couriers (< 5km)
+- `PackageDroppedByBakerEventHandler` - Stores location info
+- `OfferAcceptedPolicy` - Cancels other offers when one is accepted
+
+**Published Events** (shared):
+
+- `CourierMarkedAvailableEvent`
+- `CourierMarkedUnavailableEvent`
+- `CourierLocationUpdatedEvent`
+- `DeliveryOfferAcceptedEvent` - Triggers courier assignment
+
+**Published Events** (local):
+
+- `DeliveryOfferCreatedEvent`
+- `DeliveryOfferCancelledEvent`
+
+**External Integrations**:
+
+- `CourierNotificationService` - Mock notifications to couriers
+
+**Geolocation Features**:
+
+- Haversine formula for distance calculation
+- Finds couriers within 5km of package drop location
+- Stores both full and anonymized locations
+
+**API Endpoints**:
+
+- `POST /api/courier/{courierId}/mark-available` - Mark courier available
+- `POST /api/courier/{courierId}/mark-unavailable` - Mark courier unavailable
+- `POST /api/courier/{courierId}/update-location` - Update courier location
+- `GET /api/courier/available` - Query available couriers
+- `GET /api/delivery-offer/{courierId}/available` - Get offers for courier
+- `POST /api/delivery-offer/{offerId}/accept` - Accept delivery offer
+- `GET /api/delivery-offer/package-location/{deliveryId}` - Get package location
+
+**Dependencies**: Product Delivery Service (via `PackageDroppedByBakerEvent`)
+
+---
+
+### Shared Module
+
+**Purpose**: Cross-service contracts and common utilities
+
+**Contents**:
+
+1. **Shared Events** (contracts between services):
+    - `OrderCreatedFromCartEvent` - From Product Selection
+    - `PaymentMarkedPaidEvent` - From Payment
+    - `PackageDroppedByBakerEvent` - From Delivery
+    - `PackageRetrievedEvent` - From Delivery
+    - `DeliveryOfferAcceptedEvent` - From Courier
+    - `CourierMarkedAvailableEvent` - From Courier
+    - `CourierMarkedUnavailableEvent` - From Courier
+    - `CourierLocationUpdatedEvent` - From Courier
+
+2. **Shared Queries**:
+    - `PackageLocationQuery` - Query package location
+    - `AvailableDeliveryOffersQuery` - Query offers for courier
+    - `AvailableCouriersQuery` - Query available couriers
+    - `PackageDeliveryQuery` - Query delivery status
+
+3. **Shared DTOs**:
+    - `PackageDeliveryDTO`
+    - `PackageLocationDTO`
+    - `AvailableDeliveryOfferDTO`
+    - `AvailableCourierDTO`
+
+4. **Common Exceptions**:
+    - `NotFoundException` - Used across all services
+
+5. **Utilities**:
+    - `GeoDistanceCalculator` - Haversine formula for geolocation calculations
+
+**Design Principle**:
+
+- Only events that cross service boundaries are placed in `shared`
+- Local events remain in service modules
+- Keeps coupling minimal and explicit
+- Changes to shared contracts require careful coordination
