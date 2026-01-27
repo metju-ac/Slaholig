@@ -484,3 +484,107 @@ fun on(event: PaymentCreatedEvent) {
 - Local events remain in service modules
 - Keeps coupling minimal and explicit
 - Changes to shared contracts require careful coordination
+
+---
+
+## Cross-Cutting Concerns
+
+### Transaction Management
+
+**Saga Pattern** is used for distributed transactions across services. Implemented via Axon's event-driven policies:
+
+**Example: Order-to-Delivery Saga**
+
+1. **Happy Path**:
+    - Order created → Payment created → Payment paid → Delivery created → Courier assigned → Package delivered → Funds
+      released
+
+2. **Compensating Transactions**:
+    - Payment fails → Order marked as failed (future enhancement)
+    - No courier accepts → Offer timeout and retry logic (future enhancement)
+    - Customer doesn't retrieve → Automatic return process (future enhancement)
+
+### Error Handling
+
+**HTTP Layer**:
+
+- `ResponseStatusException` for request validation errors
+- `NotFoundException` (shared) mapped to 404 at API boundary
+- Consistent error response format across services
+
+**Event Processing**:
+
+- Failed event handlers logged with context
+- Dead-letter queue for poison messages (Axon configuration)
+- Retry policies configured per processing group
+
+**Aggregate Validation**:
+
+- Business rule violations throw exceptions before event emission
+- Aggregate state validated in command handlers
+- No invalid state persisted to event store
+
+### Logging
+
+**Strategy**:
+
+- SLF4J with Logback
+- Structured logging with key fields (IDs, status, amounts)
+- Aggregated via Loki and visualized in Grafana
+
+**Log Levels**:
+
+- `INFO`: Normal workflow (command received, event published)
+- `WARN`: Recoverable issues (retry, timeout)
+- `ERROR`: Failures requiring intervention (payment declined, validation failure)
+
+**Example**:
+
+```kotlin
+logger.info("Payment processing started for orderId: ${command.orderId}, amount: ${command.amount}")
+logger.error("Payment failed for paymentId: ${paymentId}, reason: ${exception.message}", exception)
+```
+
+### Monitoring & Observability
+
+**Metrics** (Prometheus):
+
+- JVM metrics (heap, threads, GC)
+- Spring Boot Actuator metrics
+- Axon Framework metrics (command/query/event rates)
+- Custom business metrics (orders created, payments processed)
+
+**Logs** (Loki):
+
+- Centralized log aggregation
+- Correlation IDs for tracing across services
+- Searchable and queryable via Grafana
+
+**Dashboards** (Grafana):
+
+- Pre-configured "Spring Microservices" dashboard
+- Service health overview
+- Event processing rates
+- Database connection pools
+- HTTP request metrics
+
+**Access**:
+
+- Grafana: http://localhost:3000/d/spring-microservices (admin/admin)
+- Prometheus: http://localhost:9090
+- Axon Server: http://localhost:8024
+
+### Security
+
+**Current State** (Development):
+
+- No authentication/authorization implemented
+- Database credentials in docker-compose (dev only)
+- API endpoints publicly accessible
+
+**Future Enhancements**:
+
+- Spring Security with OAuth2/JWT
+- API Gateway with centralized auth
+- Service-to-service authentication via Axon
+- Database credential management via secrets
