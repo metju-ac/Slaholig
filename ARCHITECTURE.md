@@ -588,3 +588,105 @@ logger.error("Payment failed for paymentId: ${paymentId}, reason: ${exception.me
 - API Gateway with centralized auth
 - Service-to-service authentication via Axon
 - Database credential management via secrets
+
+---
+
+## Infrastructure
+
+### Technology Stack
+
+| Layer               | Technology     | Version | Purpose                        |
+|---------------------|----------------|---------|--------------------------------|
+| **Language**        | Kotlin         | 1.9+    | Primary development language   |
+| **Framework**       | Spring Boot    | 3.x     | Application framework          |
+| **Event Framework** | Axon Framework | 4.x     | CQRS and Event Sourcing        |
+| **Build Tool**      | Gradle         | 8.x     | Build automation (Kotlin DSL)  |
+| **JVM**             | OpenJDK        | 21      | Runtime environment            |
+| **Database**        | PostgreSQL     | 17      | Per-service data persistence   |
+| **Event Store**     | Axon Server    | Latest  | Event store and message router |
+| **Monitoring**      | Prometheus     | Latest  | Metrics collection             |
+| **Logging**         | Loki           | Latest  | Log aggregation                |
+| **Visualization**   | Grafana        | Latest  | Dashboards and alerts          |
+| **Container**       | Docker         | Latest  | Service containerization       |
+| **Orchestration**   | Docker Compose | Latest  | Local development stack        |
+
+### Deployment Architecture
+
+**Local Development** (docker-compose.yml):
+
+- All services containerized and orchestrated via Docker Compose
+- Shared Docker network for inter-service communication
+- Volume mounts for persistent data (Axon event store, PostgreSQL)
+- Health checks and dependency ordering
+
+**Service Configuration**:
+
+- Environment-specific profiles (dev/prod)
+- Spring Cloud Config for centralized configuration
+- Externalized configuration via `/config` volume mount
+
+**Database Architecture**:
+
+- **Database per Service** pattern
+- Each service has isolated PostgreSQL instance
+- No cross-service database access
+- Schema managed by Hibernate DDL (dev) or Flyway/Liquibase (prod)
+
+### Build & Deployment
+
+**Gradle Multi-Module Structure**:
+
+```
+Slaholig/
+├── build.gradle.kts (root)
+├── settings.gradle.kts
+├── shared/
+│   └── build.gradle.kts
+├── product-selection-service/
+│   ├── build.gradle.kts
+│   └── Dockerfile
+├── payment-service/
+│   ├── build.gradle.kts
+│   └── Dockerfile
+├── product-delivery-service/
+│   ├── build.gradle.kts
+│   └── Dockerfile
+└── courier-service/
+    ├── build.gradle.kts
+    └── Dockerfile
+```
+
+**Build Commands**:
+
+- `./gradlew build` - Build all services
+- `./gradlew :payment-service:build` - Build single service
+- `./gradlew :payment-service:test` - Test single service
+- `docker compose up` - Start full stack
+- `docker compose up payment-service` - Start single service
+
+**CI/CD** (Future):
+
+- GitHub Actions for automated builds
+- Docker image registry for versioned artifacts
+- Kubernetes deployment for production
+- Blue-green or canary deployments
+
+### Scalability Considerations
+
+**Horizontal Scaling**:
+
+- Services are stateless (state in event store)
+- Can run multiple instances behind load balancer
+- Axon Server handles command routing and event distribution
+
+**Vertical Scaling**:
+
+- JVM tuning (heap size, GC configuration)
+- Database connection pooling
+- Async event processing
+
+**Performance Optimization**:
+
+- CQRS enables read replica scaling
+- Event sourcing replays can be optimized via snapshots
+- Eventual consistency reduces inter-service latency
