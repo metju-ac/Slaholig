@@ -103,8 +103,6 @@ Each service:
 **Distributed Transactions**:
 
 - No ACID transactions across services
-- Need saga pattern for cross-service workflows
-- **Mitigation**: Event-driven sagas with Axon Framework, eventual consistency is acceptable for our domain
 
 **Data Consistency**:
 
@@ -203,13 +201,12 @@ infrastructure and consistency with what we learned in class.
 - **Debugging**: Harder to trace issues across service boundaries
 - **Testing**: Need integration tests and contract tests between services
 - **Data joins**: Can't do SQL joins across service databases
-- **Transaction management**: Need saga pattern for distributed workflows
 
 ### Neutral
 
 - **Team size**: Microservices work best with larger teams, we're a small team
     - **Note**: We offset this with consistent architecture patterns and good documentation
-- **Event-driven learning curve**: Team needs to learn CQRS, Event Sourcing, and sagas
+- **Event-driven learning curve**: Team needs to learn CQRS, Event Sourcing
     - **Note**: We learned this in seminars, so it's actually reinforcing our education
 
 ---

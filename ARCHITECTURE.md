@@ -57,10 +57,8 @@ All architectural decisions are documented using Architecture Decision Records (
 - [ADR-002: Event-Driven Architecture with Axon Framework](./docs/adr/002-event-driven-architecture-axon.md)
 - [ADR-003: CQRS and Event Sourcing Pattern](./docs/adr/003-cqrs-event-sourcing.md)
 - [ADR-004: Clean Architecture for Service Internal Structure](./docs/adr/004-clean-architecture.md)
-- [ADR-005: Kotlin as Primary Language](./docs/adr/005-kotlin-language.md)
-- [ADR-006: Database per Service Pattern](./docs/adr/006-database-per-service.md)
-- [ADR-007: Saga Pattern for Distributed Transactions](./docs/adr/007-saga-pattern.md)
-- [ADR-008: Spring Boot Framework](./docs/adr/008-spring-boot-framework.md)
+- [ADR-005: Database per Service Pattern](docs/adr/005-database-per-service.md)
+- [ADR-006: Spring Boot Framework](docs/adr/006-spring-boot-framework.md)
 
 ---
 
@@ -494,21 +492,6 @@ fun on(event: PaymentCreatedEvent) {
 
 ## Cross-Cutting Concerns
 
-### Transaction Management
-
-**Saga Pattern** is used for distributed transactions across services. Implemented via Axon's event-driven policies:
-
-**Example: Order-to-Delivery Saga**
-
-1. **Happy Path**:
-    - Order created → Payment created → Payment paid → Delivery created → Courier assigned → Package delivered → Funds
-      released
-
-2. **Compensating Transactions**:
-    - Payment fails → Order marked as failed (future enhancement)
-    - No courier accepts → Offer timeout and retry logic (future enhancement)
-    - Customer doesn't retrieve → Automatic return process (future enhancement)
-
 ### Error Handling
 
 **HTTP Layer**:
@@ -738,12 +721,11 @@ All services follow consistent Clean Architecture pattern:
 2. **Service Discovery**: Eureka or Consul for dynamic service registration
 3. **Circuit Breaker**: Resilience4j for fault tolerance
 4. **Authentication**: OAuth2/JWT with Spring Security
-5. **Saga Compensation**: Explicit compensating transactions for rollback scenarios
-6. **Snapshots**: Event sourcing snapshots for performance optimization
-7. **Read Replicas**: Separate read-optimized projections for complex queries
-8. **Kubernetes**: Production deployment with auto-scaling and self-healing
-9. **Distributed Tracing**: OpenTelemetry / Jaeger for request tracing
-10. **Automated Testing**: Comprehensive test suite with CI/CD integration
+5. **Snapshots**: Event sourcing snapshots for performance optimization
+6. **Read Replicas**: Separate read-optimized projections for complex queries
+7. **Kubernetes**: Production deployment with auto-scaling and self-healing
+8. **Distributed Tracing**: OpenTelemetry / Jaeger for request tracing
+9. **Automated Testing**: Comprehensive test suite with CI/CD integration
 
 ---
 

@@ -1,4 +1,4 @@
-# ADR-006: Database per Service Pattern
+# ADR-005: Database per Service Pattern
 
 **Status**: Accepted  
 **Date**: 2025-12-31
@@ -254,7 +254,6 @@ Synchronous dependencies reduce resilience.
 - **Operational Overhead**: 4+ database instances to manage, monitor, and backup
 - **Data Duplication**: Order/delivery information replicated across services
 - **Eventual Consistency**: Cross-service data not immediately consistent
-- **Distributed Transactions**: Need Saga pattern (ADR-007) for cross-service workflows
 - **Testing Complexity**: Integration tests require multiple database instances
 
 ### Neutral

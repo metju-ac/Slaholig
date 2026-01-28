@@ -59,7 +59,6 @@ Services communicate exclusively via **domain events** published to Axon Server:
 - CQRS infrastructure
 - Event Sourcing support
 - Aggregate lifecycle management
-- Saga pattern implementation
 - Message routing and handler discovery
 
 ---
@@ -383,31 +382,6 @@ fun on(event: OrderCreatedFromCartEvent) {
 }
 ```
 
-### Saga Pattern
-
-For complex distributed workflows:
-
-```kotlin
-@Saga
-class OrderFulfillmentSaga {
-    @StartSaga
-    @SagaEventHandler(associationProperty = "orderId")
-    fun on(event: OrderCreatedFromCartEvent) {
-        // Start saga
-    }
-    
-    @SagaEventHandler(associationProperty = "orderId")
-    fun on(event: PaymentMarkedPaidEvent) {
-        // Continue saga
-    }
-    
-    @EndSaga
-    @SagaEventHandler(associationProperty = "orderId")
-    fun on(event: PackageRetrievedEvent) {
-        // End saga
-    }
-}
-```
 
 ### Error Handling
 

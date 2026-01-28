@@ -52,7 +52,6 @@ We will use **Clean Architecture** (also known as Hexagonal Architecture / Ports
 │   │   └── handlers/        # Query handlers (read model)
 │   ├── dto/                 # Data Transfer Objects
 │   ├── services/            # Domain services (business logic)
-│   ├── policies/            # Sagas / Event-driven workflows
 │   └── projections/         # Read model projections (CQRS)
 ├── controllers/             # Adapter Layer (REST API)
 ├── events/                  # Service-local events

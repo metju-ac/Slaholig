@@ -1,4 +1,4 @@
-# ADR-008: Spring Boot Framework
+# ADR-006: Spring Boot Framework
 
 **Status**: Accepted  
 **Date**: 2025-12-31
@@ -25,10 +25,9 @@ consistent patterns for HTTP APIs, database access, and integration with Axon Fr
 ### Requirements
 
 1. **Axon Integration**: Must integrate well with Axon Framework (ADR-002)
-2. **Kotlin Support**: Must support Kotlin as primary language (ADR-005)
-3. **Production-Ready**: Metrics, health checks, logging out of the box
-4. **Developer Experience**: Minimal boilerplate, convention-over-configuration
-5. **Ecosystem**: Strong community support and library ecosystem
+2. **Production-Ready**: Metrics, health checks, logging out of the box
+3. **Developer Experience**: Minimal boilerplate, convention-over-configuration
+4. **Ecosystem**: Strong community support and library ecosystem
 
 ---
 
@@ -532,7 +531,6 @@ This decision aligns with:
 - Microservices Architecture (ADR-001) benefits from Spring Boot's lightweight deployment
 - Event-Driven Architecture (ADR-002) requires Axon integration, which Spring Boot provides
 - Clean Architecture (ADR-004) keeps business logic independent of Spring Boot
-- Kotlin as Primary Language (ADR-005) is well-supported by Spring Boot
 - Seminar teachings (Spring Boot with Kotlin)
 
 ---
